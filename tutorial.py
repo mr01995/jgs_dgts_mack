@@ -1,6 +1,3 @@
-import os
-import random
-import math
 import pygame
 from os import listdir
 from os.path import isfile, join
@@ -42,15 +39,6 @@ def load_sprite_sheets(dir1, dir2, width, height, direction=False):
             all_sprites[image.replace(".png", "")] = sprites
 
     return all_sprites
-
-
-def get_block(size):
-    path = join("assets", "Terrain", "Terrain.png")
-    image = pygame.image.load(path).convert_alpha()
-    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
-    rect = pygame.Rect(96, 0, size, size)
-    surface.blit(image, (0, 0), rect)
-    return pygame.transform.scale2x(surface)
 
 
 class Player(pygame.sprite.Sprite):
@@ -118,7 +106,7 @@ class Player(pygame.sprite.Sprite):
 
     def hit_head(self):
         self.count = 0
-        self.y_vel *= -1
+        # self.y_vel *= -1
 
     def update_sprite(self):
         sprite_sheet = "idle"
@@ -163,6 +151,15 @@ class Object(pygame.sprite.Sprite):
         win.blit(self.image, (self.rect.x - offset_x, self.rect.y))
 
 
+def get_block(size):
+    path = join("assets", "Terrain", "Terrain.png")
+    image = pygame.image.load(path).convert_alpha()
+    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
+    rect = pygame.Rect(96, 0, size, size)
+    surface.blit(image, (0, 0), rect)
+    return pygame.transform.scale2x(surface)
+
+
 class Block(Object):
     def __init__(self, x, y, size):
         super().__init__(x, y, size, size)
@@ -171,35 +168,14 @@ class Block(Object):
         self.mask = pygame.mask.from_surface(self.image)
 
 
-class Fire(Object):
-    ANIMATION_DELAY = 3
+class Carro(Object):
 
     def __init__(self, x, y, width, height):
-        super().__init__(x, y, width, height, "fire")
-        self.fire = load_sprite_sheets("Traps", "Fire", width, height)
-        self.image = self.fire["off"][0]
+        super().__init__(x, y, width, height, "Brake")
+        self.fire = load_sprite_sheets("Cars", "Jeep_1", width, height)
+        self.image = self.fire["Brake"][0]
         self.mask = pygame.mask.from_surface(self.image)
         self.animation_count = 0
-        self.animation_name = "off"
-
-    def on(self):
-        self.animation_name = "on"
-
-    def off(self):
-        self.animation_name = "off"
-
-    def loop(self):
-        sprites = self.fire[self.animation_name]
-        sprite_index = (self.animation_count //
-                        self.ANIMATION_DELAY) % len(sprites)
-        self.image = sprites[sprite_index]
-        self.animation_count += 1
-
-        self.rect = self.image.get_rect(topleft=(self.rect.x, self.rect.y))
-        self.mask = pygame.mask.from_surface(self.image)
-
-        if self.animation_count // self.ANIMATION_DELAY > len(sprites):
-            self.animation_count = 0
 
 
 def get_background(name):
@@ -288,24 +264,21 @@ def main(window):
     block_size = 96
 
     player = Player(100, 100, 50, 50)
-    fire = Fire(20, HEIGHT - block_size - 64, 16, 32)
-    fire.on()
-    # esse for de cima vai colocar mais blocos no chão
+    carro = Carro(1020, 120, 200, 200)
     floor = [Block(i * block_size, HEIGHT - block_size, block_size)
              for i in range(-WIDTH // block_size, (WIDTH * 5) // block_size)]
 
-    # um desses aqui coloca blocos na tela
-    objects = [*floor, 
-            #    distancia X altura
+    objects = [*floor,
                Block(0, HEIGHT - block_size * 2, block_size),
-               Block(block_size * 3, HEIGHT - block_size * 3, block_size),fire,
-               Block(block_size * 3, HEIGHT - block_size * 4, block_size), 
+               Block(block_size * 3, HEIGHT - block_size * 3, block_size),
+               Block(block_size * 3, HEIGHT - block_size * 4, block_size),
                Block(block_size * 4, HEIGHT - block_size * 4, block_size),
                Block(block_size * 5, HEIGHT - block_size * 4, block_size),
                Block(block_size * 6, HEIGHT - block_size * 4, block_size),
                Block(block_size * 6, HEIGHT - block_size * 2, block_size),
                Block(block_size * 11, HEIGHT - block_size * 4, block_size),
-               Block(block_size * 8, HEIGHT - block_size * 2, block_size)
+               Block(block_size * 8, HEIGHT - block_size * 2, block_size),
+               carro,
                ]
 
     offset_x = 0
@@ -329,7 +302,7 @@ def main(window):
                     player.jump()
 
         player.loop(FPS)
-        fire.loop()
+
         handle_move(player, objects)
         draw(window, background, bg_image, player, objects, offset_x)
 
