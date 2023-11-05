@@ -3,9 +3,9 @@ from os import listdir
 from os.path import isfile, join
 pygame.init()
 
-pygame.display.set_caption("Platformer")
+pygame.display.set_caption("Survive Nature")
 
-WIDTH, HEIGHT = 900, 600
+WIDTH, HEIGHT = 1280, 720
 FPS = 60
 PLAYER_VEL = 5
 
@@ -39,6 +39,15 @@ def load_sprite_sheets(dir1, dir2, width, height, direction=False):
             all_sprites[image.replace(".png", "")] = sprites
 
     return all_sprites
+
+
+def get_block(size):
+    path = join("assets", "Terrain", "Terrain.png")
+    image = pygame.image.load(path).convert_alpha()
+    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
+    rect = pygame.Rect(96, 0, size, size)
+    surface.blit(image, (0, 0), rect)
+    return pygame.transform.scale2x(surface)
 
 
 class Player(pygame.sprite.Sprite):
@@ -150,105 +159,97 @@ class Object(pygame.sprite.Sprite):
     def draw(self, win, offset_x):
         win.blit(self.image, (self.rect.x - offset_x, self.rect.y))
 
-# Função que retorna imagem do bloco
-
-
-def get_block(size):
-    # Pega o caminho da imagem
-    path = join("assets", "Terrain", "Terrain.png")
-    # Pega a imagem e converte para transprente
-    image = pygame.image.load(path).convert_alpha()
-    # Cria uma superfície
-    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
-    # Cria o retangulo pegando a imagem e o tamanho de uma imagem grande
-    rect = pygame.Rect(96, 0, size, size)
-    # Desenha a imagem na superfície
-    surface.blit(image, (0, 0), rect)
-    # Retorna a superfície
-    return pygame.transform.scale2x(surface)
-
-# Objeto bloco que herda da classe Object
-
 
 class Block(Object):
-    # Construtor
     def __init__(self, x, y, size):
-        # Chama o construtor da classe pai
         super().__init__(x, y, size, size)
-        # Carrega as imagens do bloco
         block = get_block(size)
-        # Desenha o bloco
         self.image.blit(block, (0, 0))
-        # Cria uma mascara para o objeto
         self.mask = pygame.mask.from_surface(self.image)
 
-# Objeto carro que herda da classe Object
 
+class Fire(Object):
+    ANIMATION_DELAY = 3
 
-# def get_block(size):
-#     # Pega o caminho da imagem
-#     path = join("assets", "Terrain", "Terrain.png")
-#     # Pega a imagem e converte para transprente
-#     image = pygame.image.load(path).convert_alpha()
-#     # Cria uma superfície
-#     surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
-#     # Cria o retangulo pegando a imagem e o tamanho de uma imagem grande
-#     rect = pygame.Rect(200, 200, size, size)
-#     # Desenha a imagem na superfície
-#     surface.blit(image, (0, 0), rect)
-#     # Retorna a superfície
-#     return pygame.transform.scale2x(surface)
-
-
-class Car(Object):
-    # Construtor
     def __init__(self, x, y, width, height):
-        # Chama o construtor da classe pai
-        super().__init__(x, y, width, height, "Brake")
-        # Carrega as imagens
-        self.car = load_sprite_sheets("Cars", "Jeep_1", width, height)
-        self.image = self.car["Brake"][0]
-        # Seleciona a imagem
-        # self.image.blit(car, (0, 0))
-        # Cria uma mascara para o objeto
+        super().__init__(x, y, width, height, "fire")
+        self.fire = load_sprite_sheets("Traps", "Fire", width, height)
+        self.image = self.fire["off"][0]
         self.mask = pygame.mask.from_surface(self.image)
-# preciso rever o video e como ele faz para reconhoecer o carro como um objeto assim como um bloco
-# Pega as imagne
+        self.animation_count = 0
+        self.animation_name = "off"
 
+    def on(self):
+        self.animation_name = "on"
+
+    def off(self):
+        self.animation_name = "off"
+
+    def loop(self):
+        sprites = self.fire[self.animation_name]
+        sprite_index = (self.animation_count //
+                        self.ANIMATION_DELAY) % len(sprites)
+        self.image = sprites[sprite_index]
+        self.animation_count += 1
+
+        self.rect = self.image.get_rect(topleft=(self.rect.x, self.rect.y))
+        self.mask = pygame.mask.from_surface(self.image)
+
+        if self.animation_count // self.ANIMATION_DELAY > len(sprites):
+            self.animation_count = 0
+
+class Saw(Object):
+    ANIMATION_DELAY = 3
+
+    def __init__(self, x, y, width, height):
+        super().__init__(x, y, width, height, "saw")
+        self.saw = load_sprite_sheets("Traps", "Saw", width, height)
+        self.image = self.saw["off"][0]
+        self.mask = pygame.mask.from_surface(self.image)
+        self.animation_count = 0
+        self.animation_name = "off"
+
+    def on(self):
+        self.animation_name = "on"
+
+    def off(self):
+        self.animation_name = "off"
+
+    def loop(self):
+        sprites = self.saw[self.animation_name]
+        sprite_index = (self.animation_count //
+                        self.ANIMATION_DELAY) % len(sprites)
+        self.image = sprites[sprite_index]
+        self.animation_count += 1
+
+        self.rect = self.image.get_rect(topleft=(self.rect.x, self.rect.y))
+        self.mask = pygame.mask.from_surface(self.image)
+
+        if self.animation_count // self.ANIMATION_DELAY > len(sprites):
+            self.animation_count = 0
 
 def get_background(name):
-    # Vasculha os arquivos filtrando pelo nome
     image = pygame.image.load(join("assets", "Background", name))
-    # Pega os tamanos
     _, _, width, height = image.get_rect()
-    # Matriz de ladrilhos
     tiles = []
 
-    # Vasculha os ladrilhos e preenche a matriz
     for i in range(WIDTH // width + 1):
         for j in range(HEIGHT // height + 1):
             pos = (i * width, j * height)
             tiles.append(pos)
-    # Retorna as imagens e a matriz de ladrilhos
-    return tiles, image
 
-# Desenha os objetos que foram passados nos parametros
+    return tiles, image
 
 
 def draw(window, background, bg_image, player, objects, offset_x):
-
-    # pega os ladrilhos e desenha cada um
     for tile in background:
         window.blit(bg_image, tile)
 
-    # Percorre a lista de objetos e desenha cada um
     for obj in objects:
         obj.draw(window, offset_x)
 
-    # Desenha o jogador
     player.draw(window, offset_x)
 
-    # atualiza atela
     pygame.display.update()
 
 
@@ -283,16 +284,12 @@ def collide(player, objects, dx):
 
 
 def handle_move(player, objects):
-    # Pega as teclas
     keys = pygame.key.get_pressed()
-    # Velocidade
+
     player.x_vel = 0
-    # Colisão na esquerda
     collide_left = collide(player, objects, -PLAYER_VEL * 2)
-    # Colisão na direita
     collide_right = collide(player, objects, PLAYER_VEL * 2)
 
-    # Verifica as teclas
     if keys[pygame.K_LEFT] and not collide_left:
         player.move_left(PLAYER_VEL)
     if keys[pygame.K_RIGHT] and not collide_right:
@@ -302,62 +299,105 @@ def handle_move(player, objects):
     if keys[pygame.K_d] and not collide_right:
         player.move_right(PLAYER_VEL)
 
-    # Verifica as colisões
     vertical_collide = handle_vertical_collision(player, objects, player.y_vel)
-    # Verifica as colisões
     to_check = [collide_left, collide_right, *vertical_collide]
 
-    # Verifica as colisões
     for obj in to_check:
-        if obj and obj.name == "Brake":
+        if obj and obj.name == "fire":
+            player.make_hit()
+        if obj and obj.name == "saw":
             player.make_hit()
 
 
 def main(window):
     clock = pygame.time.Clock()
-
-    # Fundo e imagem de fundo
     background, bg_image = get_background("Blue.png")
 
-    # Tamanho do bloco
     block_size = 96
 
-    # Jogador
     player = Player(100, 100, 50, 50)
-    # Car
-    car = Car(1020, 120, 200, 200)
 
-    # Plataformas
+    #fire
+    fire = Fire(700, HEIGHT - block_size - 64, 16, 32)
+    fire.on()
+    fire_2 = Fire(2140, HEIGHT - block_size - 64, 16, 32)
+    fire_2.on()
+    fire_3 = Fire(2330, HEIGHT - block_size - 64, 16, 32)
+    fire_3.on()
+    fire_4 = Fire(2530, HEIGHT - block_size - 64, 16, 32)
+    fire_4.on()
+    fire_5 = Fire(2720, HEIGHT - block_size - 64, 16, 32)
+    fire_5.on()
+    fire_6 = Fire(3200, HEIGHT - block_size - 448, 16, 32)
+    fire_6.on()
+
+    #saw
+    saw = Saw(4000, HEIGHT - block_size - 74, 38, 38)
+    saw.on()
+
+    # esse for de cima vai colocar mais blocos no chão
     floor = [Block(i * block_size, HEIGHT - block_size, block_size)
-             for i in range(-WIDTH // block_size, (WIDTH * 5) // block_size)]
+             for i in range(-WIDTH // block_size, (WIDTH * 20) // block_size)]
 
-    # Objetos que serão renderizados e colididos
-    objects = [*floor,
-               # Criando blocos que ficam flutuando na tela e pelo ar
+    # um desses aqui coloca blocos na tela
+    objects = [*floor, 
+            #    distancia X altura
                Block(0, HEIGHT - block_size * 2, block_size),
-               Block(block_size * 3, HEIGHT - block_size * 3, block_size),
-               Block(block_size * 3, HEIGHT - block_size * 4, block_size),
+               Block(block_size * 3, HEIGHT - block_size * 3, block_size),fire,saw,
+               Block(block_size * 3, HEIGHT - block_size * 4, block_size), 
                Block(block_size * 4, HEIGHT - block_size * 4, block_size),
                Block(block_size * 5, HEIGHT - block_size * 4, block_size),
                Block(block_size * 6, HEIGHT - block_size * 4, block_size),
                Block(block_size * 6, HEIGHT - block_size * 2, block_size),
-               Block(block_size * 11, HEIGHT - block_size * 4, block_size),
                Block(block_size * 8, HEIGHT - block_size * 2, block_size),
-               car,
-               ]
+               Block(block_size * 11, HEIGHT - block_size * 4, block_size),
+               Block(block_size * 11, HEIGHT - block_size * 3, block_size),
+               Block(block_size * 14, HEIGHT - block_size * 1, block_size),
+               Block(block_size * 15, HEIGHT - block_size * 2, block_size),
+               Block(block_size * 16, HEIGHT - block_size * 3, block_size),
+               Block(block_size * 17, HEIGHT - block_size * 4, block_size),
 
-    offset_x = 0
-    # Area de rolagem para alinhamento com o jogador
+               Block(block_size * 21, HEIGHT - block_size * 2, block_size),fire_2,
+               Block(block_size * 23, HEIGHT - block_size * 2, block_size),fire_3,
+               Block(block_size * 25, HEIGHT - block_size * 2, block_size),fire_4,
+               Block(block_size * 27, HEIGHT - block_size * 2, block_size),fire_5,
+               Block(block_size * 29, HEIGHT - block_size * 2, block_size),
+
+               Block(block_size * 33, HEIGHT - block_size * 3, block_size),fire_6,
+               Block(block_size * 33, HEIGHT - block_size * 4, block_size),
+               Block(block_size * 33, HEIGHT - block_size * 5, block_size),
+
+               Block(block_size * 37, HEIGHT - block_size * 2, block_size),
+               Block(block_size * 37, HEIGHT - block_size * 3, block_size),
+               Block(block_size * 37, HEIGHT - block_size * 4, block_size),
+               Block(block_size * 37, HEIGHT - block_size * 5, block_size),
+               Block(block_size * 37, HEIGHT - block_size * 7, block_size),
+               Block(block_size * 37, HEIGHT - block_size * 8, block_size),
+
+               Block(block_size * 36, HEIGHT - block_size * 2, block_size),
+               Block(block_size * 34, HEIGHT - block_size * 3, block_size),
+               Block(block_size * 35, HEIGHT - block_size * 5, block_size),
+
+               Block(block_size * 11, HEIGHT - block_size * 4, block_size),
+               Block(block_size * 11, HEIGHT - block_size * 4, block_size),
+               Block(block_size * 11, HEIGHT - block_size * 4, block_size),
+               Block(block_size * 11, HEIGHT - block_size * 4, block_size),
+               Block(block_size * 11, HEIGHT - block_size * 4, block_size),
+               Block(block_size * 11, HEIGHT - block_size * 4, block_size)]
+
+    #change where the screen starts
+    offset_x = player.rect.x - 400
     scroll_area_width = 200
 
     run = True
     while run:
         clock.tick(FPS)
-        # Eventos
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
                 break
+
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and player.jump_count < 2:
                     player.jump()
@@ -365,17 +405,19 @@ def main(window):
                     player.jump()
                 if event.key == pygame.K_w and player.jump_count < 2:
                     player.jump()
+                    
 
-        # Loop do jogador
         player.loop(FPS)
-
-        # Manegador de movimentos veridica colisões
+        fire.loop()
+        fire_2.loop()
+        fire_3.loop()
+        fire_4.loop()
+        fire_5.loop()
+        fire_6.loop()
+        saw.loop()
         handle_move(player, objects)
-
-        # Desenha os elementos passados nos parametros
         draw(window, background, bg_image, player, objects, offset_x)
 
-        #   Alinha a tela com o jogador
         if ((player.rect.right - offset_x >= WIDTH - scroll_area_width) and player.x_vel > 0) or (
                 (player.rect.left - offset_x <= scroll_area_width) and player.x_vel < 0):
             offset_x += player.x_vel
