@@ -57,6 +57,14 @@ def get_block_2(size):
     surface.blit(image, (0, 0), rect)
     return surface
 
+def get_car_size(size):
+    path = join("assets", "Cars", "Jeep_1","Idle.png")
+    image = pygame.image.load(path).convert_alpha()
+    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
+    rect = pygame.Rect(0, 0, 720, size)
+    surface.blit(image, (0, 0), rect)
+    return pygame.transform.scale2x(surface)
+
 
 class Player(pygame.sprite.Sprite):
     COLOR = (255, 0, 0)
@@ -173,6 +181,13 @@ class Block(Object):
         super().__init__(x, y, size, size)
         block = get_block(size)
         self.image.blit(block, (0, 0))
+        self.mask = pygame.mask.from_surface(self.image)
+
+class Car(Object):
+    def __init__(self, x, y, size):
+        super().__init__(x, y, size, size)
+        car = get_car_size(size)
+        self.image.blit(car, (0, 0))
         self.mask = pygame.mask.from_surface(self.image)
 
 class Block_2(Object):
@@ -331,10 +346,16 @@ def main(window):
     background, bg_image = get_background("Blue.png")
 
     block_size = 96
+    saw_size = 96
     block_size_2 = 32
+    car_1_size = 84
 
     player = Player(100, 100, 50, 50)
 
+    #carros
+    carro_1 = Car(3800, HEIGHT - car_1_size * 2 - 64, 720)
+    carro_2 = Car(4180, HEIGHT - car_1_size * 2 - 64, 720)
+    
     #fire
     fire = Fire(700, HEIGHT - block_size - 64, 16, 32)
     fire.on()
@@ -348,10 +369,24 @@ def main(window):
     fire_5.on()
     fire_6 = Fire(3200, HEIGHT - block_size - 448, 16, 32)
     fire_6.on()
+    fire_7 = Fire(3650, HEIGHT - block_size - 64, 16, 32)
+    fire_7.on()
+    fire_8 = Fire(3686, HEIGHT - block_size - 64, 16, 32)
+    fire_8.on()
+    fire_9 = Fire(3722, HEIGHT - block_size - 64, 16, 32)
+    fire_9.on()
+    fire_10 = Fire(3758, HEIGHT - block_size - 64, 16, 32)
+    fire_10.on()
 
     #saw
-    saw = Saw(4000, HEIGHT - block_size - 74, 38, 38)
+    saw = Saw(4094, HEIGHT - saw_size - 74, 38, 38)
     saw.on()
+    saw_1 = Saw(4094, HEIGHT - saw_size * 2 - 74, 38, 38)
+    saw_1.on()
+    saw_2 = Saw(4094, HEIGHT - saw_size - 74, 38, 38)
+    saw_2.on()
+    saw_3 = Saw(4094, HEIGHT - saw_size - 74, 38, 38)
+    saw_3.on()
 
     # esse for de cima vai colocar mais blocos no chão
     floor_1 = [Block(i * block_size, HEIGHT - block_size, block_size)
@@ -368,7 +403,7 @@ def main(window):
     objects = [*floor_1, *floor_2,*floor_3,*floor_4,
             #    distancia X altura
                Block(0, HEIGHT - block_size * 2, block_size),
-               Block(block_size * 3, HEIGHT - block_size * 3, block_size),fire,saw,
+               Block(block_size * 3, HEIGHT - block_size * 3, block_size), fire,
                Block(block_size * 3, HEIGHT - block_size * 4, block_size), 
                Block(block_size * 4, HEIGHT - block_size * 4, block_size),
                Block(block_size * 5, HEIGHT - block_size * 4, block_size),
@@ -402,6 +437,7 @@ def main(window):
                Block(block_size * 36, HEIGHT - block_size * 2, block_size),
                Block(block_size * 34, HEIGHT - block_size * 3, block_size),
                Block(block_size * 35, HEIGHT - block_size * 5, block_size),
+               fire_7,fire_8,fire_9,fire_10,carro_1,saw,saw_1,carro_2,
 
                Block(block_size * 11, HEIGHT - block_size * 4, block_size),
                Block(block_size * 11, HEIGHT - block_size * 4, block_size),
@@ -414,7 +450,7 @@ def main(window):
     offset_x = player.rect.x - 400
     offset_y = 0
     scroll_area_width = 200
-    scroll_area_height = 150
+    scroll_area_height = 100
 
     run = True
     while run:
@@ -441,7 +477,12 @@ def main(window):
         fire_4.loop()
         fire_5.loop()
         fire_6.loop()
+        fire_7.loop()
+        fire_8.loop()
+        fire_9.loop()
+        fire_10.loop()
         saw.loop()
+        saw_1.loop()
         handle_move(player, objects)
         draw(window, background, bg_image, player, objects, offset_x, offset_y)
 
