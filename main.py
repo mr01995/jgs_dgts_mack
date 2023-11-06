@@ -84,6 +84,10 @@ class Player(pygame.sprite.Sprite):
         self.jump_count = 0
         self.hit = False
         self.hit_count = 0
+        self.life = 10
+        self.god = False
+        self.god_timer = 500
+        self.hit_timer = 0
 
     def jump(self):
         self.y_vel = -self.GRAVITY * 8
@@ -98,6 +102,21 @@ class Player(pygame.sprite.Sprite):
 
     def make_hit(self):
         self.hit = True
+        if self.hit:
+            self.take_hit()
+            self.god_period()
+
+    def take_hit(self):
+        if not self.god:
+            self.life -= 1
+            self.god = True
+            self.hit_timer = pygame.time.get_ticks()
+
+    def god_period(self):
+        if self.god:
+            actual_time = pygame.time.get_ticks()
+            if actual_time - self.hit_timer >= self.god_timer:
+                self.god = False
 
     def move_left(self, vel):
         self.x_vel = -vel
@@ -280,6 +299,21 @@ def draw(window, background, bg_image, player, objects, offset_x, offset_y):
 
     player.draw(window, offset_x, offset_y)
 
+    x = 30
+    y = 30
+    spacing = 20
+    life_width = 60
+    life_height = 20
+    life_color = (0, 255, 0)  # cor das vidas restantes
+    lost_life_color = (0, 0, 0)  # cor das vidas perdidas
+    for i in range(player.life):
+        pygame.draw.rect(window, life_color, (x, y, life_width, life_height))
+        x += spacing
+
+    for i in range(player.life, 10):
+        pygame.draw.rect(window, lost_life_color, (x, y, life_width, life_height))
+        x += spacing
+
     pygame.display.update()
 
 
@@ -337,8 +371,12 @@ def handle_move(player, objects):
     for obj in to_check:
         if obj and obj.name == "fire":
             player.make_hit()
+            if player.life <= 0:
+                main(window)
         if obj and obj.name == "saw":
             player.make_hit()
+            if player.life <= 0:
+                main(window)
 
 
 def main(window):
