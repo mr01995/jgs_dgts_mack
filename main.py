@@ -49,6 +49,14 @@ def get_block(size):
     surface.blit(image, (0, 0), rect)
     return pygame.transform.scale2x(surface)
 
+def get_block_2(size):
+    path = join("assets", "Terrain", "Terrain.png")
+    image = pygame.image.load(path).convert_alpha()
+    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
+    rect = pygame.Rect(144, 0, size, size)
+    surface.blit(image, (0, 0), rect)
+    return surface
+
 
 class Player(pygame.sprite.Sprite):
     COLOR = (255, 0, 0)
@@ -143,8 +151,8 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.sprite.get_rect(topleft=(self.rect.x, self.rect.y))
         self.mask = pygame.mask.from_surface(self.sprite)
 
-    def draw(self, win, offset_x):
-        win.blit(self.sprite, (self.rect.x - offset_x, self.rect.y))
+    def draw(self, win, offset_x, offset_y):
+        win.blit(self.sprite, (self.rect.x - offset_x,self.rect.y - offset_y))
 
 
 class Object(pygame.sprite.Sprite):
@@ -156,8 +164,8 @@ class Object(pygame.sprite.Sprite):
         self.height = height
         self.name = name
 
-    def draw(self, win, offset_x):
-        win.blit(self.image, (self.rect.x - offset_x, self.rect.y))
+    def draw(self, win, offset_x, offset_y):
+        win.blit(self.image, (self.rect.x - offset_x, self.rect.y - offset_y))
 
 
 class Block(Object):
@@ -165,6 +173,13 @@ class Block(Object):
         super().__init__(x, y, size, size)
         block = get_block(size)
         self.image.blit(block, (0, 0))
+        self.mask = pygame.mask.from_surface(self.image)
+
+class Block_2(Object):
+    def __init__(self, x, y, size):
+        super().__init__(x, y, size, size)
+        block_2 = get_block_2(size)
+        self.image.blit(block_2, (0, 0))
         self.mask = pygame.mask.from_surface(self.image)
 
 
@@ -241,14 +256,14 @@ def get_background(name):
     return tiles, image
 
 
-def draw(window, background, bg_image, player, objects, offset_x):
+def draw(window, background, bg_image, player, objects, offset_x, offset_y):
     for tile in background:
         window.blit(bg_image, tile)
 
     for obj in objects:
-        obj.draw(window, offset_x)
+        obj.draw(window, offset_x, offset_y)
 
-    player.draw(window, offset_x)
+    player.draw(window, offset_x, offset_y)
 
     pygame.display.update()
 
@@ -298,6 +313,8 @@ def handle_move(player, objects):
         player.move_left(PLAYER_VEL)
     if keys[pygame.K_d] and not collide_right:
         player.move_right(PLAYER_VEL)
+    #if keys[pygame.K_ESCAPE]:
+        
 
     vertical_collide = handle_vertical_collision(player, objects, player.y_vel)
     to_check = [collide_left, collide_right, *vertical_collide]
@@ -314,6 +331,7 @@ def main(window):
     background, bg_image = get_background("Blue.png")
 
     block_size = 96
+    block_size_2 = 32
 
     player = Player(100, 100, 50, 50)
 
@@ -336,11 +354,18 @@ def main(window):
     saw.on()
 
     # esse for de cima vai colocar mais blocos no chão
-    floor = [Block(i * block_size, HEIGHT - block_size, block_size)
-             for i in range(-WIDTH // block_size, (WIDTH * 20) // block_size)]
+    floor_1 = [Block(i * block_size, HEIGHT - block_size, block_size)
+             for i in range(-WIDTH // block_size, (WIDTH * 5) // block_size)]
+    floor_2 = [Block_2(n * block_size_2, HEIGHT , block_size_2)
+             for n in range(-WIDTH // block_size_2, (WIDTH * 5) // block_size_2)]
+    floor_3 = [Block_2(n * block_size_2, HEIGHT + block_size_2 , block_size_2)
+             for n in range(-WIDTH // block_size_2, (WIDTH * 5) // block_size_2)]
+    floor_4 = [Block_2(n * block_size_2, HEIGHT + block_size_2 + block_size_2, block_size_2)
+             for n in range(-WIDTH // block_size_2, (WIDTH * 5) // block_size_2)]
+
 
     # um desses aqui coloca blocos na tela
-    objects = [*floor, 
+    objects = [*floor_1, *floor_2,*floor_3,*floor_4,
             #    distancia X altura
                Block(0, HEIGHT - block_size * 2, block_size),
                Block(block_size * 3, HEIGHT - block_size * 3, block_size),fire,saw,
@@ -387,7 +412,9 @@ def main(window):
 
     #change where the screen starts
     offset_x = player.rect.x - 400
+    offset_y = 0
     scroll_area_width = 200
+    scroll_area_height = 150
 
     run = True
     while run:
@@ -416,7 +443,11 @@ def main(window):
         fire_6.loop()
         saw.loop()
         handle_move(player, objects)
-        draw(window, background, bg_image, player, objects, offset_x)
+        draw(window, background, bg_image, player, objects, offset_x, offset_y)
+
+        if ((player.rect.bottom - offset_y >= HEIGHT - scroll_area_height) and player.y_vel > 0) or (
+        (player.rect.top - offset_y <= (scroll_area_height + 100)) and player.y_vel < 0):
+            offset_y += player.y_vel
 
         if ((player.rect.right - offset_x >= WIDTH - scroll_area_width) and player.x_vel > 0) or (
                 (player.rect.left - offset_x <= scroll_area_width) and player.x_vel < 0):
