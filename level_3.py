@@ -19,7 +19,7 @@ pygame.display.set_caption("Avalanche")
 
 WIDTH, HEIGHT = 1280, 680
 FPS = 60
-PLAYER_VEL = 15
+PLAYER_VEL = 7
 
 
 window = pygame.display.set_mode((WIDTH, HEIGHT))
