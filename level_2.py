@@ -234,7 +234,7 @@ class Fire(Object):
 
 
 def get_background(name):
-    image = pygame.image.load(join("assets", "Background", name))
+    image = pygame.image.load(join("assets", "city", name))
     _, _, width, height = image.get_rect()
     tiles = []
 
@@ -343,7 +343,7 @@ def main(window):
     from main import morte
     
     clock = pygame.time.Clock()
-    background, bg_image = get_background("Blue.png")
+    background, bg_image = get_background("bg_nivel_2.png")
     pause = False
     block_size = 96 
     countdown = 300
@@ -486,8 +486,8 @@ def main(window):
         draw(window, background, bg_image, player, objects, offset_x,  offset_y)
         draw_countdown(countdown)
 
-        if pause:
-            draw_pause_menu(window)
+        # if pause:
+        #     draw_pause_menu(window)
 
         if ((player.rect.right - offset_x >= WIDTH - scroll_area_width) and player.x_vel > 0) or (
                 (player.rect.left - offset_x <= scroll_area_width) and player.x_vel < 0):
