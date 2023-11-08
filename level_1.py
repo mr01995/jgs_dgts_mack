@@ -104,6 +104,9 @@ class Player(pygame.sprite.Sprite):
         self.rect.x += dx
         self.rect.y += dy
 
+    def die(self):
+        self.life = 0
+
     def make_hit(self):
         self.hit = True
         if self.hit:
@@ -220,6 +223,43 @@ class Block_2(Object):
         self.image.blit(block_2, (0, 0))
         self.mask = pygame.mask.from_surface(self.image)
 
+class Wave(pygame.sprite.Sprite):
+    COLOR = (255, 0, 0)
+    SPRITES = load_sprite_sheets("Waves", "ground", 800, 200)
+    ANIMATION_DELAY = 9
+
+    def __init__(self, x, y, width, height):
+        super().__init__()
+        self.rect = pygame.Rect(x, y, width, height)
+        self.x_vel = 3
+        self.y_vel = 0
+        self.mask = None
+        self.name = "wave"
+        self.animation_count = 0
+
+    def loop(self):
+        self.rect.x += self.x_vel
+        self.update_sprite()
+
+    def update_sprite(self):
+        sprite_sheet = "waves"
+
+        sprite_sheet_name = sprite_sheet
+        sprites = self.SPRITES[sprite_sheet_name]
+        sprite_index = (self.animation_count //
+                        self.ANIMATION_DELAY) % len(sprites)
+        self.sprite = sprites[sprite_index]
+        self.sprite = pygame.transform.rotate(self.sprite, 270)
+        self.sprite = pygame.transform.scale(self.sprite,(960,540))
+        self.animation_count += 1
+        self.update()
+
+    def update(self):
+        self.rect = self.sprite.get_rect(topleft=(self.rect.x, self.rect.y))
+        self.mask = pygame.mask.from_surface(self.sprite)
+
+    def draw(self, win, offset_x, offset_y):
+        win.blit(self.sprite, (self.rect.x - offset_x, self.rect.y - offset_y))
 
 class Fire(Object):
     ANIMATION_DELAY = 3
@@ -303,12 +343,12 @@ class Rain(pygame.sprite.Sprite):
         self.rect.y = self.rect.y + self.speedy            
 
 def get_background(name):
-    image = pygame.image.load(join("assets", "Background", name))
+    image = pygame.image.load(join("assets", "city", name))
     _, _, width, height = image.get_rect()
     tiles = []
 
     for i in range(WIDTH // width + 1):
-        for j in range(HEIGHT // height + 1):
+        for j in range(HEIGHT // height + 100):
             pos = (i * width, j * height)
             tiles.append(pos)
 
@@ -411,16 +451,17 @@ rain_group = pygame.sprite.Group()
 
 def main(window):
     clock = pygame.time.Clock()
-    background, bg_image = get_background("Blue.png")
-    pause = False
+    background, bg_image = get_background("7.png")
 
     block_size = 96
     saw_size = 96
     block_size_2 = 32
+    wave_size = 200
     car_1_size = 84
 
     player = Player(100, 100, 50, 50)
 
+    wave_1 = Wave(-1000, HEIGHT - wave_size * 2, 1000, 500)
     for i in range(200):
         rain = Rain()
         rain_group.add(rain)
@@ -518,7 +559,8 @@ def main(window):
                Block(block_size * 11, HEIGHT - block_size * 4, block_size),
                Block(block_size * 11, HEIGHT - block_size * 4, block_size),
                Block(block_size * 11, HEIGHT - block_size * 4, block_size)]
-
+    
+    objects.extend([wave_1])
 
     #change where the screen starts
     offset_x = player.rect.x - 400
@@ -557,6 +599,7 @@ def main(window):
         fire_8.loop()
         fire_9.loop()
         fire_10.loop()
+        wave_1.loop()
         saw.loop()
         saw_1.loop()
         handle_move(player, objects)
