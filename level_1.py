@@ -544,18 +544,13 @@ def main(window):
                Block(block_size * 16, HEIGHT - block_size * 3, block_size),
                Block(block_size * 17, HEIGHT - block_size * 4, block_size),
 
-               Block(block_size * 21, HEIGHT - \
-                     block_size * 2, block_size), fire_2,
-               Block(block_size * 23, HEIGHT - \
-                     block_size * 2, block_size), fire_3,
-               Block(block_size * 25, HEIGHT - \
-                     block_size * 2, block_size), fire_4,
-               Block(block_size * 27, HEIGHT - \
-                     block_size * 2, block_size), fire_5,
+               Block(block_size * 21, HEIGHT - block_size * 2, block_size), fire_2,
+               Block(block_size * 23, HEIGHT - block_size * 2, block_size), fire_3,
+               Block(block_size * 25, HEIGHT - block_size * 2, block_size), fire_4,
+               Block(block_size * 27, HEIGHT - block_size * 2, block_size), fire_5,
                Block(block_size * 29, HEIGHT - block_size * 2, block_size),
 
-               Block(block_size * 33, HEIGHT - \
-                     block_size * 3, block_size), fire_6,
+               Block(block_size * 33, HEIGHT - block_size * 3, block_size), fire_6,
                Block(block_size * 33, HEIGHT - block_size * 4, block_size),
                Block(block_size * 33, HEIGHT - block_size * 5, block_size),
 
@@ -623,7 +618,7 @@ def main(window):
         saw_1.loop()
         handle_move(player, objects)
         draw(window, background, bg_image, player, objects, offset_x, offset_y)
-# wave
+
         # if pause:
         #     draw_pause_menu(window)
 

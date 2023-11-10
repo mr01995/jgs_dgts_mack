@@ -15,9 +15,8 @@ pygame.display.set_caption("Heatwaves")
 WIDTH, HEIGHT = 1280, 720
 FPS = 60
 PLAYER_VEL = 15
-global pause; 
-global countdown;
-
+global pause
+global countdown
 
 
 window = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -25,6 +24,7 @@ window = pygame.display.set_mode((WIDTH, HEIGHT))
 
 def flip(sprites):
     return [pygame.transform.flip(sprite, True, False) for sprite in sprites]
+
 
 def load_sprite_sheets(dir1, dir2, width, height, direction=False):
     path = join("assets", dir1, dir2)
@@ -66,7 +66,7 @@ class Player(pygame.sprite.Sprite):
     SPRITES = load_sprite_sheets("MainCharacters", "NinjaFrog", 32, 32, True)
     ANIMATION_DELAY = 3
 
-    def __init__(self, x, y, width, height ):
+    def __init__(self, x, y, width, height):
         super().__init__()
         self.rect = pygame.Rect(x, y, width, height)
         self.x_vel = 0
@@ -85,7 +85,6 @@ class Player(pygame.sprite.Sprite):
         self.jump_sound = pygame.mixer.Sound('assets/Audio/jump.wav')
         self.jump_sound.set_volume(0.5)
         self.hit_sound = pygame.mixer.Sound('assets/Audio/hit.wav')
-
 
     def jump(self):
         self.y_vel = -self.GRAVITY * 8
@@ -127,7 +126,6 @@ class Player(pygame.sprite.Sprite):
         self.fall_count += 1
         self.update_sprite()
 
-    
     def landed(self):
         self.fall_count = 0
         self.y_vel = 0
@@ -177,8 +175,7 @@ class Player(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.sprite)
 
     def draw(self, win, offset_x,  offset_y):
-        win.blit(self.sprite, (self.rect.x - offset_x, self.rect.y -  offset_y))
-    
+        win.blit(self.sprite, (self.rect.x - offset_x, self.rect.y - offset_y))
 
 
 class Object(pygame.sprite.Sprite):
@@ -191,7 +188,7 @@ class Object(pygame.sprite.Sprite):
         self.name = name
 
     def draw(self, win, offset_x,  offset_y):
-        win.blit(self.image, (self.rect.x - offset_x, self.rect.y -  offset_y))
+        win.blit(self.image, (self.rect.x - offset_x, self.rect.y - offset_y))
 
 
 class Block(Object):
@@ -233,6 +230,88 @@ class Fire(Object):
             self.animation_count = 0
 
 
+def get_bathtub_size(size):
+    path = join("assets", "House", "bathtub.png")
+    image = pygame.image.load(path).convert_alpha()
+    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
+    rect = pygame.Rect(0, 0, 720, size)
+    surface.blit(image, (0, 0), rect)
+    return pygame.transform.scale2x(surface)
+
+
+class Bathtub(Object):
+    def __init__(self, x, y, size):
+        super().__init__(x, y, size, size)
+        bathtub = get_bathtub_size(size)
+        self.image.blit(bathtub, (0, 0))
+        self.mask = pygame.mask.from_surface(self.image)
+
+
+def get_closet_size(size):
+    path = join("assets", "House", "closet.png")
+    image = pygame.image.load(path).convert_alpha()
+    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
+    rect = pygame.Rect(0, 0, 720, size)
+    surface.blit(image, (0, 0), rect)
+    return pygame.transform.scale2x(surface)
+
+
+class Closet(Object):
+    def __init__(self, x, y, size):
+        super().__init__(x, y, size, size)
+        closet = get_closet_size(size)
+        self.image.blit(closet, (0, 0))
+        self.mask = pygame.mask.from_surface(self.image)
+
+
+def get_sink_size(size):
+    path = join("assets", "House", "sink.png")
+    image = pygame.image.load(path).convert_alpha()
+    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
+    rect = pygame.Rect(0, 0, 720, size)
+    surface.blit(image, (0, 0), rect)
+    return pygame.transform.scale2x(surface)
+
+
+class Sink(Object):
+    def __init__(self, x, y, size):
+        super().__init__(x, y, size, size)
+        sink = get_sink_size(size)
+        self.image.blit(sink, (0, 0))
+        self.mask = pygame.mask.from_surface(self.image)
+def get_stove_size(size):
+    path = join("assets", "House", "stove.png")
+    image = pygame.image.load(path).convert_alpha()
+    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
+    rect = pygame.Rect(0, 0, 720, size)
+    surface.blit(image, (0, 0), rect)
+    return pygame.transform.scale2x(surface)
+
+
+class Stove(Object):
+    def __init__(self, x, y, size):
+        super().__init__(x, y, size, size)
+        stove = get_stove_size(size)
+        self.image.blit(stove, (0, 0))
+        self.mask = pygame.mask.from_surface(self.image)
+
+def get_toilet_size(size):
+    path = join("assets", "House", "toilet.png")
+    image = pygame.image.load(path).convert_alpha()
+    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
+    rect = pygame.Rect(0, 0, 720, size)
+    surface.blit(image, (0, 0), rect)
+    return pygame.transform.scale2x(surface)
+
+
+class Toilet(Object):
+    def __init__(self, x, y, size):
+        super().__init__(x, y, size, size)
+        toilet = get_toilet_size(size)
+        self.image.blit(toilet, (0, 0))
+        self.mask = pygame.mask.from_surface(self.image)
+
+
 def get_background(name):
     image = pygame.image.load(join("assets", "city", name))
     _, _, width, height = image.get_rect()
@@ -267,18 +346,22 @@ def draw(window, background, bg_image, player, objects, offset_x,  offset_y):
         x += spacing
 
     for i in range(player.life, 10):
-        pygame.draw.rect(window, lost_life_color, (x, y, life_width, life_height))
+        pygame.draw.rect(window, lost_life_color,
+                         (x, y, life_width, life_height))
         x += spacing
 
     pygame.display.update()
 
+
 def draw_countdown(countdown):
-    
-    text = get_font(75).render(str(int(countdown)), True, (255, 255, 255))  # Renderiza o número como texto
+
+    text = get_font(75).render(str(int(countdown)), True,
+                               (255, 255, 255))  # Renderiza o número como texto
     text_rect = text.get_rect(center=(640, 100))  # Centraliza o texto na tela
-    window.blit(text, text_rect) 
-    
+    window.blit(text, text_rect)
+
     pygame.display.update()
+
 
 def handle_vertical_collision(player, objects, dy):
     collided_objects = []
@@ -308,6 +391,7 @@ def collide(player, objects, dx):
     player.move(-dx, 0)
     player.update()
     return collided_object
+
 
 def handle_move(player, objects):
     from main import morte
@@ -341,12 +425,23 @@ def handle_move(player, objects):
 
 def main(window):
     from main import morte
-    
+
     clock = pygame.time.Clock()
     background, bg_image = get_background("bg_nivel_2.png")
     pause = False
-    block_size = 96 
+    block_size = 96
     countdown = 300
+
+    bathtub_size = 62
+    bathtub = Bathtub(100, HEIGHT - bathtub_size * 2 - 58, 720)
+    closet_size = 110
+    closet = Closet(400, HEIGHT - closet_size * 2 - 58, 720)
+    sink_size = 80
+    sink = Sink(700, HEIGHT - sink_size * 2 - 58, 720)
+    stove_size = 80
+    stove = Stove(1200, HEIGHT - stove_size * 2 - 58, 720)
+    toilet_size = 80
+    toilet = Toilet(1600, HEIGHT - toilet_size * 2 - 58, 720)
 
     player = Player(100, 100, 50, 50)
     fire = Fire(block_size * 14, HEIGHT - block_size - 64, 16, 32)
@@ -356,8 +451,13 @@ def main(window):
              for i in range(-WIDTH // block_size, (WIDTH * 5) // block_size)]
 
     # um desses aqui coloca blocos na tela
-    objects = [*floor, 
-            #    distancia X altura
+    objects = [*floor,
+               #    distancia X altura
+               bathtub,
+               closet,
+               sink,
+               stove,
+               toilet,
                Block(block_size * 10, HEIGHT - block_size * 3, block_size),
                Block(block_size * 10, HEIGHT - block_size * 4, block_size),
                Block(block_size * 10, HEIGHT - block_size * 5, block_size),
@@ -404,12 +504,15 @@ def main(window):
                Block(block_size * 15.5, HEIGHT - block_size * 4, block_size/2),
                Block(block_size * 16, HEIGHT - block_size * 4, block_size/2),
                Block(block_size * 16.5, HEIGHT - block_size * 4, block_size/2),
-               Block(block_size * 17, HEIGHT - block_size * 4, block_size/2),fire,
+               Block(block_size * 17, HEIGHT - \
+                     block_size * 4, block_size/2), fire,
                Block(block_size * 17.5, HEIGHT - block_size * 4, block_size/2),
                Block(block_size * 18, HEIGHT - block_size * 4, block_size/2),
-               Block(block_size * 18.5, HEIGHT - block_size * 2.5, block_size/2),
+               Block(block_size * 18.5, HEIGHT - \
+                     block_size * 2.5, block_size/2),
                Block(block_size * 19, HEIGHT - block_size * 3, block_size/2),
-               Block(block_size * 19.5, HEIGHT - block_size * 3.5, block_size/2),
+               Block(block_size * 19.5, HEIGHT - \
+                     block_size * 3.5, block_size/2),
                Block(block_size * 20, HEIGHT - block_size * 4, block_size/2),
                Block(block_size * 20.5, HEIGHT - block_size * 4, block_size/2),
                Block(block_size * 21, HEIGHT - block_size * 4, block_size/2),
@@ -420,7 +523,7 @@ def main(window):
                Block(block_size * 23.5, HEIGHT - block_size * 4, block_size/2),
                Block(block_size * 24, HEIGHT - block_size * 4, block_size/2),
                Block(block_size * 24.5, HEIGHT - block_size * 4, block_size/2),
-               
+
                Block(block_size * 11, HEIGHT - block_size * 7, block_size/2),
                Block(block_size * 11.5, HEIGHT - block_size * 7, block_size/2),
                Block(block_size * 12, HEIGHT - block_size * 7, block_size/2),
@@ -433,12 +536,15 @@ def main(window):
                Block(block_size * 15.5, HEIGHT - block_size * 7, block_size/2),
                Block(block_size * 16, HEIGHT - block_size * 7, block_size/2),
                Block(block_size * 16.5, HEIGHT - block_size * 7, block_size/2),
-               Block(block_size * 17, HEIGHT - block_size * 7, block_size/2),fire,
+               Block(block_size * 17, HEIGHT - \
+                     block_size * 7, block_size/2), fire,
                Block(block_size * 17.5, HEIGHT - block_size * 7, block_size/2),
                Block(block_size * 18, HEIGHT - block_size * 7, block_size/2),
-               Block(block_size * 18.5, HEIGHT - block_size * 6.5, block_size/2),
+               Block(block_size * 18.5, HEIGHT - \
+                     block_size * 6.5, block_size/2),
                Block(block_size * 19, HEIGHT - block_size * 6, block_size/2),
-               Block(block_size * 19.5, HEIGHT - block_size * 5.5, block_size/2),
+               Block(block_size * 19.5, HEIGHT - \
+                     block_size * 5.5, block_size/2),
                Block(block_size * 20, HEIGHT - block_size * 7, block_size/2),
                Block(block_size * 20.5, HEIGHT - block_size * 7, block_size/2),
                Block(block_size * 21, HEIGHT - block_size * 7, block_size/2),
@@ -450,7 +556,7 @@ def main(window):
                Block(block_size * 24, HEIGHT - block_size * 7, block_size/2),
                Block(block_size * 24.5, HEIGHT - block_size * 7, block_size/2),
 
-               
+
                ]
 
     offset_x = 0
@@ -458,11 +564,10 @@ def main(window):
     scroll_area_width = 200
     scroll_area_height = 75
 
-
     run = True
     while run:
         clock.tick(FPS)
-        
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
@@ -477,10 +582,9 @@ def main(window):
                     player.jump()
                 if event.key == pygame.K_ESCAPE:
                     pause = not pause
-                        
 
         player.loop(FPS)
-        
+
         fire.loop()
         handle_move(player, objects)
         draw(window, background, bg_image, player, objects, offset_x,  offset_y)
@@ -493,10 +597,10 @@ def main(window):
                 (player.rect.left - offset_x <= scroll_area_width) and player.x_vel < 0):
             offset_x += player.x_vel
         if ((player.rect.bottom - offset_y >= HEIGHT - scroll_area_height) and player.y_vel > 0) or (
-        (player.rect.top - offset_y <= (scroll_area_height + 100)) and player.y_vel < 0):
+                (player.rect.top - offset_y <= (scroll_area_height + 100)) and player.y_vel < 0):
             offset_y += player.y_vel
         countdown -= clock.tick(60) / 1000
-        
+
         if countdown <= 0:
             morte()
 
