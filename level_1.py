@@ -566,7 +566,7 @@ def main(window):
                ,wave_1
                ]
     
-    # objects.extend([wave_1])
+    # objects.extend([wave_1])  
 
     #change where the screen starts
     offset_x = player.rect.x - 400
@@ -610,7 +610,7 @@ def main(window):
         saw_1.loop()
         handle_move(player, objects)
         draw(window, background, bg_image, player, objects, offset_x, offset_y)
-
+# wave
         # if pause:
         #     draw_pause_menu(window)
 
