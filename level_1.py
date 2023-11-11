@@ -2,7 +2,6 @@ import pygame
 from os import listdir
 from os.path import isfile, join
 import random
-from pause import draw_pause_menu
 
 pygame.init()
 
@@ -11,7 +10,7 @@ pygame.display.set_caption("Flood Flow Enchente")
 WIDTH, HEIGHT = 1280, 720
 FPS = 60
 PLAYER_VEL = 10
-global pause;
+PAUSE = False
 
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 
@@ -53,6 +52,7 @@ def get_block(size):
     surface.blit(image, (0, 0), rect)
     return pygame.transform.scale2x(surface)
 
+
 def get_block_2(size):
     path = join("assets", "Terrain", "TerrainCidade.png")
     image = pygame.image.load(path).convert_alpha()
@@ -61,15 +61,22 @@ def get_block_2(size):
     surface.blit(image, (0, 0), rect)
     return surface
 
+
 def get_car_size(size):
-    path = join("assets", "Cars", "Jeep_1","Idle.png")
+    path = join("assets", "Cars", "Jeep_1", "Idle.png")
     image = pygame.image.load(path).convert_alpha()
     surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
     rect = pygame.Rect(0, 0, 720, size)
     surface.blit(image, (0, 0), rect)
     return pygame.transform.scale2x(surface)
 
-
+def get_ship_size(size):
+    path = join("assets", "Ship", "ship.png")
+    image = pygame.image.load(path).convert_alpha()
+    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
+    rect = pygame.Rect(0, 0, 720, size)
+    surface.blit(image, (0, 0), rect)
+    return surface
 class Player(pygame.sprite.Sprite):
     COLOR = (255, 0, 0)
     GRAVITY = 1
@@ -138,17 +145,18 @@ class Player(pygame.sprite.Sprite):
             self.animation_count = 0
 
     def loop(self, fps):
-        self.y_vel += min(1, (self.fall_count / fps) * self.GRAVITY)
-        self.move(self.x_vel, self.y_vel)
+        if not PAUSE:
+            self.y_vel += min(1, (self.fall_count / fps) * self.GRAVITY)
+            self.move(self.x_vel, self.y_vel)
 
-        if self.hit:
-            self.hit_count += 1
-        if self.hit_count > fps * 2:
-            self.hit = False
-            self.hit_count = 0
+            if self.hit:
+                self.hit_count += 1
+            if self.hit_count > fps * 2:
+                self.hit = False
+                self.hit_count = 0
 
-        self.fall_count += 1
-        self.update_sprite()
+            self.fall_count += 1
+            self.update_sprite()
 
     def landed(self):
         self.fall_count = 0
@@ -186,7 +194,7 @@ class Player(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.sprite)
 
     def draw(self, win, offset_x, offset_y):
-        win.blit(self.sprite, (self.rect.x - offset_x,self.rect.y - offset_y))
+        win.blit(self.sprite, (self.rect.x - offset_x, self.rect.y - offset_y))
 
 
 class Object(pygame.sprite.Sprite):
@@ -209,6 +217,7 @@ class Block(Object):
         self.image.blit(block, (0, 0))
         self.mask = pygame.mask.from_surface(self.image)
 
+
 class Car(Object):
     def __init__(self, x, y, size):
         super().__init__(x, y, size, size)
@@ -216,12 +225,20 @@ class Car(Object):
         self.image.blit(car, (0, 0))
         self.mask = pygame.mask.from_surface(self.image)
 
+class Ship(Object):
+    def __init__(self, x, y, size):
+        super().__init__(x, y, size, size)
+        ship = get_ship_size(size)
+        self.image.blit(ship, (0, 0))
+        self.mask = pygame.mask.from_surface(self.image)
+        self.name = "ship"
 class Block_2(Object):
     def __init__(self, x, y, size):
         super().__init__(x, y, size, size)
         block_2 = get_block_2(size)
         self.image.blit(block_2, (0, 0))
         self.mask = pygame.mask.from_surface(self.image)
+
 
 class Wave(pygame.sprite.Sprite):
     COLOR = (255, 0, 0)
@@ -231,15 +248,16 @@ class Wave(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height):
         super().__init__()
         self.rect = pygame.Rect(x, y, width, height)
-        self.x_vel = 3
+        self.x_vel = 4
         self.y_vel = 0
         self.mask = None
         self.name = "wave"
         self.animation_count = 0
 
     def loop(self):
-        self.rect.x += self.x_vel
-        self.update_sprite()
+        if not PAUSE:
+            self.rect.x += self.x_vel
+            self.update_sprite()
 
     def update_sprite(self):
         sprite_sheet = "waves"
@@ -250,7 +268,7 @@ class Wave(pygame.sprite.Sprite):
                         self.ANIMATION_DELAY) % len(sprites)
         self.sprite = sprites[sprite_index]
         self.sprite = pygame.transform.rotate(self.sprite, 270)
-        self.sprite = pygame.transform.scale(self.sprite,(960,540))
+        self.sprite = pygame.transform.scale(self.sprite, (960, 540))
         self.animation_count += 1
         self.update()
 
@@ -260,6 +278,7 @@ class Wave(pygame.sprite.Sprite):
 
     def draw(self, win, offset_x, offset_y):
         win.blit(self.sprite, (self.rect.x - offset_x, self.rect.y - offset_y))
+
 
 class Fire(Object):
     ANIMATION_DELAY = 3
@@ -279,17 +298,19 @@ class Fire(Object):
         self.animation_name = "off"
 
     def loop(self):
-        sprites = self.fire[self.animation_name]
-        sprite_index = (self.animation_count //
-                        self.ANIMATION_DELAY) % len(sprites)
-        self.image = sprites[sprite_index]
-        self.animation_count += 1
+        if not PAUSE:
+            sprites = self.fire[self.animation_name]
+            sprite_index = (self.animation_count //
+                            self.ANIMATION_DELAY) % len(sprites)
+            self.image = sprites[sprite_index]
+            self.animation_count += 1
 
-        self.rect = self.image.get_rect(topleft=(self.rect.x, self.rect.y))
-        self.mask = pygame.mask.from_surface(self.image)
+            self.rect = self.image.get_rect(topleft=(self.rect.x, self.rect.y))
+            self.mask = pygame.mask.from_surface(self.image)
 
-        if self.animation_count // self.ANIMATION_DELAY > len(sprites):
-            self.animation_count = 0
+            if self.animation_count // self.ANIMATION_DELAY > len(sprites):
+                self.animation_count = 0
+
 
 class Saw(Object):
     ANIMATION_DELAY = 3
@@ -309,17 +330,19 @@ class Saw(Object):
         self.animation_name = "off"
 
     def loop(self):
-        sprites = self.saw[self.animation_name]
-        sprite_index = (self.animation_count //
-                        self.ANIMATION_DELAY) % len(sprites)
-        self.image = sprites[sprite_index]
-        self.animation_count += 1
+        if not PAUSE:
+            sprites = self.saw[self.animation_name]
+            sprite_index = (self.animation_count //
+                            self.ANIMATION_DELAY) % len(sprites)
+            self.image = sprites[sprite_index]
+            self.animation_count += 1
 
-        self.rect = self.image.get_rect(topleft=(self.rect.x, self.rect.y))
-        self.mask = pygame.mask.from_surface(self.image)
+            self.rect = self.image.get_rect(topleft=(self.rect.x, self.rect.y))
+            self.mask = pygame.mask.from_surface(self.image)
 
-        if self.animation_count // self.ANIMATION_DELAY > len(sprites):
-            self.animation_count = 0
+            if self.animation_count // self.ANIMATION_DELAY > len(sprites):
+                self.animation_count = 0
+
 
 class Rain(pygame.sprite.Sprite):
     def __init__(self):
@@ -327,20 +350,21 @@ class Rain(pygame.sprite.Sprite):
         self.image = rain_img
         self.rect = self.image.get_rect()
         self.speedx = 3
-        self.speedy = random.randint(5,25)
-        self.rect.x = random.randint(-100,WIDTH)
-        self.rect.y = random.randint(-HEIGHT,-5)
+        self.speedy = random.randint(5, 25)
+        self.rect.x = random.randint(-100, WIDTH)
+        self.rect.y = random.randint(-HEIGHT, -5)
 
     def update(self):
-        
-        if self.rect.bottom > HEIGHT:
-            self.speedx = 3
-            self.speedy = random.randint(5,25)
-            self.rect.x = random.randint(-WIDTH,WIDTH)
-            self.rect.y = random.randint(-HEIGHT,-5)
-            
-        self.rect.x = self.rect.x + self.speedx
-        self.rect.y = self.rect.y + self.speedy            
+        if not PAUSE:
+            if self.rect.bottom > HEIGHT:
+                self.speedx = 3
+                self.speedy = random.randint(5, 25)
+                self.rect.x = random.randint(-WIDTH, WIDTH)
+                self.rect.y = random.randint(-HEIGHT, -5)
+
+            self.rect.x = self.rect.x + self.speedx
+            self.rect.y = self.rect.y + self.speedy
+
 
 def get_background(name):
     image = pygame.image.load(join("assets", "city", name))
@@ -375,7 +399,8 @@ def draw(window, background, bg_image, player, objects, offset_x, offset_y):
         pygame.draw.rect(window, life_color, (x, y, life_width, life_height))
         x += spacing
     for i in range(player.life, 10):
-        pygame.draw.rect(window, lost_life_color, (x, y, life_width, life_height))
+        pygame.draw.rect(window, lost_life_color,
+                         (x, y, life_width, life_height))
         x += spacing
     
     
@@ -429,8 +454,7 @@ def handle_move(player, objects):
         player.move_left(PLAYER_VEL)
     if keys[pygame.K_d] and not collide_right:
         player.move_right(PLAYER_VEL)
-    #if keys[pygame.K_ESCAPE]:
-        
+    # if keys[pygame.K_ESCAPE]:
 
     vertical_collide = handle_vertical_collision(player, objects, player.y_vel)
     to_check = [collide_left, collide_right, *vertical_collide]
@@ -448,6 +472,8 @@ def handle_move(player, objects):
             player.make_hit()
             if player.life <= 0:
                 death()
+        if obj and obj.name == "ship":
+            WIN = True
 
 rain_img = pygame.image.load('assets/Background/rain.png')
 rain_img = pygame.transform.scale(rain_img, (16, 16))
@@ -463,19 +489,22 @@ def main(window):
     block_size_2 = 32
     wave_size = 200
     car_1_size = 84
+    ship_size = 170
 
     player = Player(100, 100, 50, 50)
+
+    ship = Ship(5100, HEIGHT - ship_size, 720)
 
     wave_1 = Wave(-1000, HEIGHT - wave_size * 2, 1000, 500)
     for i in range(150):
         rain = Rain()
         rain_group.add(rain)
 
-    #carros
+    # carros
     carro_1 = Car(3800, HEIGHT - car_1_size * 2 - 64, 720)
     carro_2 = Car(4180, HEIGHT - car_1_size * 2 - 64, 720)
-    
-    #fire
+
+    # fire
     fire = Fire(700, HEIGHT - block_size - 64, 16, 32)
     fire.on()
     fire_2 = Fire(2140, HEIGHT - block_size - 64, 16, 32)
@@ -497,7 +526,7 @@ def main(window):
     fire_10 = Fire(3758, HEIGHT - block_size - 64, 16, 32)
     fire_10.on()
 
-    #saw
+    # saw
     saw = Saw(4094, HEIGHT - saw_size - 74, 38, 38)
     saw.on()
     saw_1 = Saw(4094, HEIGHT - saw_size * 2 - 74, 38, 38)
@@ -509,21 +538,20 @@ def main(window):
 
     # esse for de cima vai colocar mais blocos no chão
     floor_1 = [Block(i * block_size, HEIGHT - block_size, block_size)
-             for i in range(-WIDTH // block_size, (WIDTH * 4) // block_size)]
-    floor_2 = [Block_2(n * block_size_2, HEIGHT , block_size_2)
-             for n in range(-WIDTH // block_size_2, (WIDTH * 4) // block_size_2)]
-    floor_3 = [Block_2(n * block_size_2, HEIGHT + block_size_2 , block_size_2)
-             for n in range(-WIDTH // block_size_2, (WIDTH * 4) // block_size_2)]
+               for i in range(-WIDTH // block_size, (WIDTH * 4) // block_size)]
+    floor_2 = [Block_2(n * block_size_2, HEIGHT, block_size_2)
+               for n in range(-WIDTH // block_size_2, (WIDTH * 4) // block_size_2)]
+    floor_3 = [Block_2(n * block_size_2, HEIGHT + block_size_2, block_size_2)
+               for n in range(-WIDTH // block_size_2, (WIDTH * 4) // block_size_2)]
     floor_4 = [Block_2(n * block_size_2, HEIGHT + block_size_2 + block_size_2, block_size_2)
-             for n in range(-WIDTH // block_size_2, (WIDTH * 4) // block_size_2)]
-
+               for n in range(-WIDTH // block_size_2, (WIDTH * 4) // block_size_2)]
 
     # um desses aqui coloca blocos na tela
-    objects = [*floor_1, *floor_2,*floor_3,*floor_4,
-            #    distancia X altura
+    objects = [*floor_1, *floor_2, *floor_3, *floor_4,
+               #    distancia X altura
                Block(0, HEIGHT - block_size * 2, block_size),
                Block(block_size * 3, HEIGHT - block_size * 3, block_size), fire,
-               Block(block_size * 3, HEIGHT - block_size * 4, block_size), 
+               Block(block_size * 3, HEIGHT - block_size * 4, block_size),
                Block(block_size * 4, HEIGHT - block_size * 4, block_size),
                Block(block_size * 5, HEIGHT - block_size * 4, block_size),
                Block(block_size * 6, HEIGHT - block_size * 4, block_size),
@@ -536,13 +564,13 @@ def main(window):
                Block(block_size * 16, HEIGHT - block_size * 3, block_size),
                Block(block_size * 17, HEIGHT - block_size * 4, block_size),
 
-               Block(block_size * 21, HEIGHT - block_size * 2, block_size),fire_2,
-               Block(block_size * 23, HEIGHT - block_size * 2, block_size),fire_3,
-               Block(block_size * 25, HEIGHT - block_size * 2, block_size),fire_4,
-               Block(block_size * 27, HEIGHT - block_size * 2, block_size),fire_5,
+               Block(block_size * 21, HEIGHT - block_size * 2, block_size), fire_2,
+               Block(block_size * 23, HEIGHT - block_size * 2, block_size), fire_3,
+               Block(block_size * 25, HEIGHT - block_size * 2, block_size), fire_4,
+               Block(block_size * 27, HEIGHT - block_size * 2, block_size), fire_5,
                Block(block_size * 29, HEIGHT - block_size * 2, block_size),
 
-               Block(block_size * 33, HEIGHT - block_size * 3, block_size),fire_6,
+               Block(block_size * 33, HEIGHT - block_size * 3, block_size), fire_6,
                Block(block_size * 33, HEIGHT - block_size * 4, block_size),
                Block(block_size * 33, HEIGHT - block_size * 5, block_size),
 
@@ -556,20 +584,20 @@ def main(window):
                Block(block_size * 36, HEIGHT - block_size * 2, block_size),
                Block(block_size * 34, HEIGHT - block_size * 3, block_size),
                Block(block_size * 35, HEIGHT - block_size * 5, block_size),
-               fire_7,fire_8,fire_9,fire_10,carro_1,saw,saw_1,carro_2,
+               fire_7, fire_8, fire_9, fire_10, carro_1, saw, saw_1, carro_2,
 
                Block(block_size * 11, HEIGHT - block_size * 4, block_size),
                Block(block_size * 11, HEIGHT - block_size * 4, block_size),
                Block(block_size * 11, HEIGHT - block_size * 4, block_size),
                Block(block_size * 11, HEIGHT - block_size * 4, block_size),
-               Block(block_size * 11, HEIGHT - block_size * 4, block_size),
-               Block(block_size * 11, HEIGHT - block_size * 4, block_size)
-               ,wave_1
+               Block(block_size * 11, HEIGHT - block_size * 4, block_size),ship,
+               Block(block_size * 11, HEIGHT - \
+                     block_size * 4, block_size), wave_1
                ]
-    
+
     # objects.extend([wave_1])
 
-    #change where the screen starts
+    # change where the screen starts
     offset_x = player.rect.x - 400
     offset_y = 0
     scroll_area_width = 200
@@ -577,6 +605,7 @@ def main(window):
 
     run = True
     while run:
+        global PAUSE
         clock.tick(FPS)
 
         for event in pygame.event.get():
@@ -585,16 +614,18 @@ def main(window):
                 break
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and player.jump_count < 2:
+                if event.key == pygame.K_SPACE and player.jump_count < 2 and not PAUSE:
                     player.jump()
-                if event.key == pygame.K_UP and player.jump_count < 2:
+                if event.key == pygame.K_UP and player.jump_count < 2 and not PAUSE:
                     player.jump()
-                if event.key == pygame.K_w and player.jump_count < 2:
+                if event.key == pygame.K_w and player.jump_count < 2 and not PAUSE:
                     player.jump()
                 if event.key == pygame.K_ESCAPE:
-                    pause = not pause
-                    
-        
+                    if PAUSE:
+                        PAUSE = False
+                    else: 
+                        PAUSE = True
+
         player.loop(FPS)
         fire.loop()
         fire_2.loop()
@@ -615,6 +646,7 @@ def main(window):
         if pause:
             draw_pause_menu(window)
 
+
         if ((player.rect.bottom - offset_y >= HEIGHT - scroll_area_height -50) and player.y_vel > 0) or (
         (player.rect.top - offset_y <= (scroll_area_height + 100)) and player.y_vel < 0): 
             offset_y += player.y_vel # a janela carrega elementos criados conforme jogador vai andando
@@ -626,7 +658,7 @@ def main(window):
         rain_group.update()
         rain_group.draw(window)
         pygame.display.flip()
-        
+
     pygame.quit()
     quit()
 

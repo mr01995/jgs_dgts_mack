@@ -395,6 +395,10 @@ def handle_move(player, objects):
             player.make_hit()
             if player.life <= 0:
                 main(window)
+        if obj and obj.name == "avalanche":
+            player.make_hit()
+            if player.life <= 0:
+                main(window)
 
 
 class Rain(pygame.sprite.Sprite):
@@ -424,6 +428,45 @@ rain_img = pygame.transform.scale(rain_img, (16, 16))
 rain_group = pygame.sprite.Group()
 
 
+class Avalanche(pygame.sprite.Sprite):
+    COLOR = (255, 0, 0)
+    SPRITES = load_sprite_sheets("Disaster", "Avalanche", 800, 500)
+    ANIMATION_DELAY = 9
+
+    def __init__(self, x, y, width, height):
+        super().__init__()
+        self.rect = pygame.Rect(x, y, width, height)
+        self.x_vel = 3
+        self.y_vel = 0
+        self.mask = None
+        self.name = "avalanche"
+        self.animation_count = 0
+
+    def loop(self):
+        self.rect.x += self.x_vel
+        self.update_sprite()
+
+    def update_sprite(self):
+        sprite_sheet = "Avalanche"
+
+        sprite_sheet_name = sprite_sheet
+        sprites = self.SPRITES[sprite_sheet_name]
+        sprite_index = (self.animation_count //
+                        self.ANIMATION_DELAY) % len(sprites)
+        self.sprite = sprites[sprite_index]
+        self.sprite = pygame.transform.rotate(self.sprite, 270)
+        self.sprite = pygame.transform.scale(self.sprite, (1000, 540))
+        self.animation_count += 1
+        self.update()
+
+    def update(self):
+        self.rect = self.sprite.get_rect(topleft=(self.rect.x, self.rect.y))
+        self.mask = pygame.mask.from_surface(self.sprite)
+
+    def draw(self, win, offset_x, offset_y):
+        win.blit(self.sprite, (self.rect.x - offset_x, self.rect.y - offset_y))
+
+
 def main(window):
     clock = pygame.time.Clock()
     background, bg_image = get_background("bg_nivel_3.png")
@@ -432,8 +475,11 @@ def main(window):
     saw_size = 96
     block_size_2 = 32
     car_1_size = 84
+    wave_size = 200
 
     player = Player(100, 100, 50, 50)
+    avalanche = Avalanche(-1000, HEIGHT - wave_size * 2, 1000, 500)
+
     for i in range(150):
         rain = Rain()
         rain_group.add(rain)
@@ -544,7 +590,7 @@ def main(window):
         Block(block_size * 60, HEIGHT - block_size * 4, block_size),
         Block(block_size * 61, HEIGHT - block_size * 3, block_size),
         Block(block_size * 62, HEIGHT - block_size * 2, block_size),
-
+        avalanche
 
     ]
 
@@ -586,6 +632,10 @@ def main(window):
         fire_10.loop()
         saw.loop()
         saw_1.loop()
+        saw_2.loop()
+        saw_3.loop()
+        saw_4.loop()
+        avalanche.loop()
         handle_move(player, objects)
         draw(window, background, bg_image, player, objects, offset_x, offset_y)
 
