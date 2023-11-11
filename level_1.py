@@ -2,7 +2,6 @@ import pygame
 from os import listdir
 from os.path import isfile, join
 import random
-from pause import draw_pause_menu
 
 pygame.init()
 
@@ -11,7 +10,7 @@ pygame.display.set_caption("Flood Flow Enchente")
 WIDTH, HEIGHT = 1280, 720
 FPS = 60
 PLAYER_VEL = 10
-global pause
+PAUSE = False
 
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 
@@ -71,7 +70,13 @@ def get_car_size(size):
     surface.blit(image, (0, 0), rect)
     return pygame.transform.scale2x(surface)
 
-
+def get_ship_size(size):
+    path = join("assets", "Ship", "ship.png")
+    image = pygame.image.load(path).convert_alpha()
+    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
+    rect = pygame.Rect(0, 0, 720, size)
+    surface.blit(image, (0, 0), rect)
+    return surface
 class Player(pygame.sprite.Sprite):
     COLOR = (255, 0, 0)
     GRAVITY = 1
@@ -140,17 +145,18 @@ class Player(pygame.sprite.Sprite):
             self.animation_count = 0
 
     def loop(self, fps):
-        self.y_vel += min(1, (self.fall_count / fps) * self.GRAVITY)
-        self.move(self.x_vel, self.y_vel)
+        if not PAUSE:
+            self.y_vel += min(1, (self.fall_count / fps) * self.GRAVITY)
+            self.move(self.x_vel, self.y_vel)
 
-        if self.hit:
-            self.hit_count += 1
-        if self.hit_count > fps * 2:
-            self.hit = False
-            self.hit_count = 0
+            if self.hit:
+                self.hit_count += 1
+            if self.hit_count > fps * 2:
+                self.hit = False
+                self.hit_count = 0
 
-        self.fall_count += 1
-        self.update_sprite()
+            self.fall_count += 1
+            self.update_sprite()
 
     def landed(self):
         self.fall_count = 0
@@ -219,7 +225,13 @@ class Car(Object):
         self.image.blit(car, (0, 0))
         self.mask = pygame.mask.from_surface(self.image)
 
-
+class Ship(Object):
+    def __init__(self, x, y, size):
+        super().__init__(x, y, size, size)
+        ship = get_ship_size(size)
+        self.image.blit(ship, (0, 0))
+        self.mask = pygame.mask.from_surface(self.image)
+        self.name = "ship"
 class Block_2(Object):
     def __init__(self, x, y, size):
         super().__init__(x, y, size, size)
@@ -236,15 +248,16 @@ class Wave(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height):
         super().__init__()
         self.rect = pygame.Rect(x, y, width, height)
-        self.x_vel = 3
+        self.x_vel = 4
         self.y_vel = 0
         self.mask = None
         self.name = "wave"
         self.animation_count = 0
 
     def loop(self):
-        self.rect.x += self.x_vel
-        self.update_sprite()
+        if not PAUSE:
+            self.rect.x += self.x_vel
+            self.update_sprite()
 
     def update_sprite(self):
         sprite_sheet = "waves"
@@ -285,17 +298,18 @@ class Fire(Object):
         self.animation_name = "off"
 
     def loop(self):
-        sprites = self.fire[self.animation_name]
-        sprite_index = (self.animation_count //
-                        self.ANIMATION_DELAY) % len(sprites)
-        self.image = sprites[sprite_index]
-        self.animation_count += 1
+        if not PAUSE:
+            sprites = self.fire[self.animation_name]
+            sprite_index = (self.animation_count //
+                            self.ANIMATION_DELAY) % len(sprites)
+            self.image = sprites[sprite_index]
+            self.animation_count += 1
 
-        self.rect = self.image.get_rect(topleft=(self.rect.x, self.rect.y))
-        self.mask = pygame.mask.from_surface(self.image)
+            self.rect = self.image.get_rect(topleft=(self.rect.x, self.rect.y))
+            self.mask = pygame.mask.from_surface(self.image)
 
-        if self.animation_count // self.ANIMATION_DELAY > len(sprites):
-            self.animation_count = 0
+            if self.animation_count // self.ANIMATION_DELAY > len(sprites):
+                self.animation_count = 0
 
 
 class Saw(Object):
@@ -316,17 +330,18 @@ class Saw(Object):
         self.animation_name = "off"
 
     def loop(self):
-        sprites = self.saw[self.animation_name]
-        sprite_index = (self.animation_count //
-                        self.ANIMATION_DELAY) % len(sprites)
-        self.image = sprites[sprite_index]
-        self.animation_count += 1
+        if not PAUSE:
+            sprites = self.saw[self.animation_name]
+            sprite_index = (self.animation_count //
+                            self.ANIMATION_DELAY) % len(sprites)
+            self.image = sprites[sprite_index]
+            self.animation_count += 1
 
-        self.rect = self.image.get_rect(topleft=(self.rect.x, self.rect.y))
-        self.mask = pygame.mask.from_surface(self.image)
+            self.rect = self.image.get_rect(topleft=(self.rect.x, self.rect.y))
+            self.mask = pygame.mask.from_surface(self.image)
 
-        if self.animation_count // self.ANIMATION_DELAY > len(sprites):
-            self.animation_count = 0
+            if self.animation_count // self.ANIMATION_DELAY > len(sprites):
+                self.animation_count = 0
 
 
 class Rain(pygame.sprite.Sprite):
@@ -340,15 +355,15 @@ class Rain(pygame.sprite.Sprite):
         self.rect.y = random.randint(-HEIGHT, -5)
 
     def update(self):
+        if not PAUSE:
+            if self.rect.bottom > HEIGHT:
+                self.speedx = 3
+                self.speedy = random.randint(5, 25)
+                self.rect.x = random.randint(-WIDTH, WIDTH)
+                self.rect.y = random.randint(-HEIGHT, -5)
 
-        if self.rect.bottom > HEIGHT:
-            self.speedx = 3
-            self.speedy = random.randint(5, 25)
-            self.rect.x = random.randint(-WIDTH, WIDTH)
-            self.rect.y = random.randint(-HEIGHT, -5)
-
-        self.rect.x = self.rect.x + self.speedx
-        self.rect.y = self.rect.y + self.speedy
+            self.rect.x = self.rect.x + self.speedx
+            self.rect.y = self.rect.y + self.speedy
 
 
 def get_background(name):
@@ -456,6 +471,8 @@ def handle_move(player, objects):
             player.make_hit()
             if player.life <= 0:
                 morte()
+        if obj and obj.name == "ship":
+            WIN = True
 
 
 rain_img = pygame.image.load('assets/Background/rain.png')
@@ -472,8 +489,11 @@ def main(window):
     block_size_2 = 32
     wave_size = 200
     car_1_size = 84
+    ship_size = 170
 
     player = Player(100, 100, 50, 50)
+
+    ship = Ship(5100, HEIGHT - ship_size, 720)
 
     wave_1 = Wave(-1000, HEIGHT - wave_size * 2, 1000, 500)
     for i in range(150):
@@ -570,7 +590,7 @@ def main(window):
                Block(block_size * 11, HEIGHT - block_size * 4, block_size),
                Block(block_size * 11, HEIGHT - block_size * 4, block_size),
                Block(block_size * 11, HEIGHT - block_size * 4, block_size),
-               Block(block_size * 11, HEIGHT - block_size * 4, block_size),
+               Block(block_size * 11, HEIGHT - block_size * 4, block_size),ship,
                Block(block_size * 11, HEIGHT - \
                      block_size * 4, block_size), wave_1
                ]
@@ -585,6 +605,7 @@ def main(window):
 
     run = True
     while run:
+        global PAUSE
         clock.tick(FPS)
 
         for event in pygame.event.get():
@@ -593,14 +614,17 @@ def main(window):
                 break
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and player.jump_count < 2:
+                if event.key == pygame.K_SPACE and player.jump_count < 2 and not PAUSE:
                     player.jump()
-                if event.key == pygame.K_UP and player.jump_count < 2:
+                if event.key == pygame.K_UP and player.jump_count < 2 and not PAUSE:
                     player.jump()
-                if event.key == pygame.K_w and player.jump_count < 2:
+                if event.key == pygame.K_w and player.jump_count < 2 and not PAUSE:
                     player.jump()
                 if event.key == pygame.K_ESCAPE:
-                    pause = not pause
+                    if PAUSE:
+                        PAUSE = False
+                    else: 
+                        PAUSE = True
 
         player.loop(FPS)
         fire.loop()
