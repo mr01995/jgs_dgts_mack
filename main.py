@@ -27,7 +27,7 @@ def get_font_title(size):
     return pygame.font.Font("assets/Font/Humanistic.ttf", size)
 
 
-def morte():
+def death():
     while True:
         OPTIONS_MOUSE_POS = pygame.mouse.get_pos()
 
@@ -53,17 +53,42 @@ def morte():
 
         pygame.display.update()
 
-
-def aprenda():
+def victory():
     while True:
         OPTIONS_MOUSE_POS = pygame.mouse.get_pos()
 
         window.fill("white")
 
-        OPTIONS_TEXT = get_font(25).render(
-            "Este jogo visa ensinar o jogador a sobreviver em ambientes simulados de desastres naturais provocados pelo Aquecimento Global", True, "Black")
+        OPTIONS_TEXT = get_font(45).render("Parabéns! Você aprendeu a sobreviver", True, "Black")
         OPTIONS_RECT = OPTIONS_TEXT.get_rect(center=(640, 260))
         window.blit(OPTIONS_TEXT, OPTIONS_RECT)
+
+        OPTIONS_BACK = Button(image=None, pos=(640, 460),
+                              text_input="Voltar", font=get_font(75), base_color="Black", hovering_color="Green")
+
+        OPTIONS_BACK.changeColor(OPTIONS_MOUSE_POS)
+        OPTIONS_BACK.update(window)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if OPTIONS_BACK.checkForInput(OPTIONS_MOUSE_POS):
+                    main_menu()
+
+        pygame.display.update()
+
+
+def aprenda():
+    texto_aprenda = "Este jogo visa ensinar o jogador a sobreviver em ambientes simulados de desastres naturais provocados pelo Aquecimento Global"
+    text(texto_aprenda)
+    while True:
+        OPTIONS_MOUSE_POS = pygame.mouse.get_pos()
+
+        window.fill("white")
+
+        get_text()
 
         OPTIONS_BACK = Button(image=None, pos=(640, 460),
                               text_input="BACK", font=get_font(75), base_color="Black", hovering_color="Green")

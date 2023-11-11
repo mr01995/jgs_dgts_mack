@@ -4,7 +4,7 @@ import math
 import pygame
 import sys
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, join #funções para acessar arquivos
 from button import *
 from pause import draw_pause_menu
 
@@ -13,22 +13,23 @@ pygame.init()
 pygame.display.set_caption("Heatwaves")
 
 WIDTH, HEIGHT = 1280, 720
-FPS = 60
-PLAYER_VEL = 15
-global pause
-global countdown
 
+FPS = 120
+PLAYER_VEL = 5
+countdown = 0
 
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 
+calor = pygame.Surface((1280,720), pygame.SRCALPHA)  
+calor.fill((255, 228, 132, 60))
 
 def flip(sprites):
     return [pygame.transform.flip(sprite, True, False) for sprite in sprites]
 
 
-def load_sprite_sheets(dir1, dir2, width, height, direction=False):
-    path = join("assets", dir1, dir2)
-    images = [f for f in listdir(path) if isfile(join(path, f))]
+def load_sprite_sheets(dir1, dir2, width, height, direction=False): # é dinâmico para acessar qualquer tipo de sprite, a direction serve para definir se a imagem possui multiplos sprites ou só 1
+    path = join("assets", dir1, dir2)   # acessa a pasta
+    images = [f for f in listdir(path) if isfile(join(path, f))] #acessa todos os nomes de arquivos dentro de uma pasta
 
     all_sprites = {}
 
@@ -40,7 +41,7 @@ def load_sprite_sheets(dir1, dir2, width, height, direction=False):
             surface = pygame.Surface((width, height), pygame.SRCALPHA, 32)
             rect = pygame.Rect(i * width, 0, width, height)
             surface.blit(sprite_sheet, (0, 0), rect)
-            sprites.append(pygame.transform.scale2x(surface))
+            sprites.append(pygame.transform.scale2x(surface)) # dobra os sprites de 32px para 64px
 
         if direction:
             all_sprites[image.replace(".png", "") + "_right"] = sprites
@@ -78,10 +79,10 @@ class Player(pygame.sprite.Sprite):
         self.jump_count = 0
         self.hit = False
         self.hit_count = 0
-        self.life = 10
-        self.invencivel = False
-        self.invencibilidade_tempo = 500
-        self.tempo_dano = 0
+        self.life = 20
+        self.invincible = False
+        self.god_timer = 500
+        self.hit_timer = 0
         self.jump_sound = pygame.mixer.Sound('assets/Audio/jump.wav')
         self.jump_sound.set_volume(0.5)
         self.hit_sound = pygame.mixer.Sound('assets/Audio/hit.wav')
@@ -100,6 +101,9 @@ class Player(pygame.sprite.Sprite):
 
     def make_hit(self):
         self.hit = True
+        if self.hit:
+            self.take_hit()
+            self.god_period()
 
     def move_left(self, vel):
         self.x_vel = -vel
@@ -131,18 +135,18 @@ class Player(pygame.sprite.Sprite):
         self.y_vel = 0
         self.jump_count = 0
 
-    def tomar_dano(self):
-        if not self.invencivel:
+    def take_hit(self):
+        if not self.invincible:
             self.life -= 1
             self.hit_sound.play()
-            self.invencivel = True
-            self.tempo_dano = pygame.time.get_ticks()
+            self.invincible = True
+            self.hit_timer = pygame.time.get_ticks()
 
-    def tempo_invencibilidade(self):
-        if self.invencivel:
-            tempo_atual = pygame.time.get_ticks()
-            if tempo_atual - self.tempo_dano >= self.invencibilidade_tempo:
-                self.invencivel = False
+    def god_period(self):
+        if self.invincible:
+            actual_time = pygame.time.get_ticks()
+            if actual_time - self.hit_timer >= self.god_timer:
+                self.invincible = False
 
     def hit_head(self):
         self.count = 0
@@ -325,7 +329,7 @@ def get_background(name):
     return tiles, image
 
 
-def draw(window, background, bg_image, player, objects, offset_x,  offset_y):
+def draw(window, background, bg_image, player, objects, offset_x,  offset_y, countdown, pause):
     for tile in background:
         window.blit(bg_image, tile)
 
@@ -339,26 +343,25 @@ def draw(window, background, bg_image, player, objects, offset_x,  offset_y):
     spacing = 20
     life_width = 60
     life_height = 20
-    life_color = (0, 255, 0)  # cor das vidas restantes
-    lost_life_color = (0, 0, 0)  # cor das vidas perdidas
+    actual_life = (0, 255, 0)  # cor das vidas restantes
+    max_life = (0, 0, 0)  # cor das vidas perdidas
     for i in range(player.life):
-        pygame.draw.rect(window, life_color, (x, y, life_width, life_height))
+        pygame.draw.rect(window, actual_life, (x, y, life_width, life_height))
         x += spacing
 
-    for i in range(player.life, 10):
-        pygame.draw.rect(window, lost_life_color,
-                         (x, y, life_width, life_height))
+
+    for i in range(player.life, 20): 
+        pygame.draw.rect(window, max_life, (x, y, life_width, life_height))
         x += spacing
-
-    pygame.display.update()
-
-
-def draw_countdown(countdown):
-
-    text = get_font(75).render(str(int(countdown)), True,
-                               (255, 255, 255))  # Renderiza o número como texto
+    
+    if countdown < 165:
+        window.blit(calor, (0,0))
+    text = get_font(75).render(str(int(countdown)), True, (255, 255, 255))  # Renderiza o número como texto
     text_rect = text.get_rect(center=(640, 100))  # Centraliza o texto na tela
-    window.blit(text, text_rect)
+    window.blit(text, text_rect) 
+    
+    if pause:
+        draw_pause_menu(window)
 
     pygame.display.update()
 
@@ -378,6 +381,14 @@ def handle_vertical_collision(player, objects, dy):
 
     return collided_objects
 
+def heat_damage(player, countdown):
+    from main import death
+    player.god_timer = 1000
+    if countdown < 165:
+        player.make_hit()
+        if player.life <= 0:
+            death()
+
 
 def collide(player, objects, dx):
     player.move(dx, 0)
@@ -394,7 +405,7 @@ def collide(player, objects, dx):
 
 
 def handle_move(player, objects):
-    from main import morte
+    from main import death
 
     keys = pygame.key.get_pressed()
 
@@ -416,21 +427,20 @@ def handle_move(player, objects):
 
     for obj in to_check:
         if obj and obj.name == "fire":
-            player.make_hit()
-            player.tomar_dano()
-            player.tempo_invencibilidade()
-            if player.life <= 0:
-                morte()
+           player.make_hit()
+           if player.life <= 0:
+                death()
 
 
 def main(window):
-    from main import morte
-
+    from main import victory
+    
     clock = pygame.time.Clock()
     background, bg_image = get_background("bg_nivel_2.png")
     pause = False
-    block_size = 96
-    countdown = 300
+    block_size = 96 
+    countdown = 10
+    
 
     bathtub_size = 62
     bathtub = Bathtub(100, HEIGHT - bathtub_size * 2 - 58, 720)
@@ -562,8 +572,8 @@ def main(window):
     offset_x = 0
     offset_y = 0
     scroll_area_width = 200
-    scroll_area_height = 75
-
+    scroll_area_height = 75                         
+    
     run = True
     while run:
         clock.tick(FPS)
@@ -582,27 +592,27 @@ def main(window):
                     player.jump()
                 if event.key == pygame.K_ESCAPE:
                     pause = not pause
+                    clock.tick(0)
+                        
+        if pause == False:
+            player.loop(FPS)
+            heat_damage(player, countdown)
+            fire.loop()
+            handle_move(player, objects)
+        draw(window, background, bg_image, player, objects, offset_x,  offset_y, countdown, pause)
+        
 
-        player.loop(FPS)
-
-        fire.loop()
-        handle_move(player, objects)
-        draw(window, background, bg_image, player, objects, offset_x,  offset_y)
-        draw_countdown(countdown)
-
-        # if pause:
-        #     draw_pause_menu(window)
-
-        if ((player.rect.right - offset_x >= WIDTH - scroll_area_width) and player.x_vel > 0) or (
-                (player.rect.left - offset_x <= scroll_area_width) and player.x_vel < 0):
-            offset_x += player.x_vel
-        if ((player.rect.bottom - offset_y >= HEIGHT - scroll_area_height) and player.y_vel > 0) or (
-                (player.rect.top - offset_y <= (scroll_area_height + 100)) and player.y_vel < 0):
-            offset_y += player.y_vel
-        countdown -= clock.tick(60) / 1000
-
+        if pause == False:
+            if ((player.rect.right - offset_x >= WIDTH - scroll_area_width) and player.x_vel > 0) or (
+                    (player.rect.left - offset_x <= scroll_area_width) and player.x_vel < 0):
+                offset_x += player.x_vel
+            if ((player.rect.bottom - offset_y >= HEIGHT - scroll_area_height) and player.y_vel > 0) or (
+            (player.rect.top - offset_y <= (scroll_area_height + 100)) and player.y_vel < 0):
+                offset_y += player.y_vel
+            countdown -= clock.tick(FPS) / 1000
+        
         if countdown <= 0:
-            morte()
+            victory()
 
     pygame.quit()
     quit()
