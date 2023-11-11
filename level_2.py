@@ -432,7 +432,6 @@ def handle_move(player, objects):
     vertical_collide = handle_vertical_collision(player, objects, player.y_vel)
     to_check = [collide_left, collide_right, *vertical_collide]
 
-    encostando = False
     
     for obj in to_check:
         if obj and obj.name == "fire":
@@ -440,20 +439,19 @@ def handle_move(player, objects):
            if player.life <= 0:
                 death()
         if obj and obj.name == "sink":
-           encostando = True
+           player.calor = False
+           player.god_timer = 10000
            print("frio")
         if obj and obj.name == "bathtub":
            player.calor = False
         if obj and obj.name == "toilet":
            player.calor = False
            print("frio")
+        else:
+            player.calor = True
+            print('quente')
 
-    if encostando:
-        player.calor = False
-    else:
-        if not any(obj and obj.name == "sink" for obj in objects):
-           player.calor = True
-           print("quente")
+    
 
 
 def main(window):
