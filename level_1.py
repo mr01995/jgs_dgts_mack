@@ -11,7 +11,7 @@ pygame.display.set_caption("Flood Flow Enchente")
 WIDTH, HEIGHT = 1280, 720
 FPS = 60
 PLAYER_VEL = 10
-global pause
+global pause;
 
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 
@@ -374,10 +374,11 @@ def draw(window, background, bg_image, player, objects, offset_x, offset_y):
     for i in range(player.life):
         pygame.draw.rect(window, life_color, (x, y, life_width, life_height))
         x += spacing
-
     for i in range(player.life, 10):
         pygame.draw.rect(window, lost_life_color, (x, y, life_width, life_height))
         x += spacing
+    
+    
 
     pygame.display.update()
 
@@ -413,7 +414,7 @@ def collide(player, objects, dx):
 
 
 def handle_move(player, objects):
-    from main import morte
+    from main import death
     keys = pygame.key.get_pressed()
 
     player.x_vel = 0
@@ -438,15 +439,15 @@ def handle_move(player, objects):
         if obj and obj.name == "fire":
             player.make_hit()
             if player.life <= 0:
-                morte()
+                death()
         if obj and obj.name == "saw":
             player.make_hit()
             if player.life <= 0:
-                morte()
+                death()
         if obj and obj.name == "wave":
             player.make_hit()
             if player.life <= 0:
-                morte()
+                death()
 
 rain_img = pygame.image.load('assets/Background/rain.png')
 rain_img = pygame.transform.scale(rain_img, (16, 16))
@@ -456,7 +457,7 @@ rain_group = pygame.sprite.Group()
 def main(window):
     clock = pygame.time.Clock()
     background, bg_image = get_background("bg_nivel_1.png")
-
+    pause = False
     block_size = 96
     saw_size = 96
     block_size_2 = 32
@@ -611,12 +612,12 @@ def main(window):
         handle_move(player, objects)
         draw(window, background, bg_image, player, objects, offset_x, offset_y)
 
-        # if pause:
-        #     draw_pause_menu(window)
+        if pause:
+            draw_pause_menu(window)
 
         if ((player.rect.bottom - offset_y >= HEIGHT - scroll_area_height -50) and player.y_vel > 0) or (
-        (player.rect.top - offset_y <= (scroll_area_height + 100)) and player.y_vel < 0):
-            offset_y += player.y_vel
+        (player.rect.top - offset_y <= (scroll_area_height + 100)) and player.y_vel < 0): 
+            offset_y += player.y_vel # a janela carrega elementos criados conforme jogador vai andando
 
         if ((player.rect.right - offset_x >= WIDTH - scroll_area_width) and player.x_vel > 0) or (
                 (player.rect.left - offset_x <= scroll_area_width) and player.x_vel < 0):

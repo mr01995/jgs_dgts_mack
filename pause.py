@@ -1,13 +1,11 @@
 import pygame
 import sys
+from button import *
 
-
-def get_font(size): 
-    return pygame.font.Font("assets/Font/FantaisieArtistique.ttf", size)
 
 def draw_pause_menu(window):
-    from button import Button
     from main import main_menu
+    
 
     mouse_posicao = pygame.mouse.get_pos()
     pygame.draw.rect(window, (200, 200, 200), (450, 100, 400 , 600))
@@ -16,9 +14,9 @@ def draw_pause_menu(window):
     window.blit(OPTIONS_TEXT, OPTIONS_RECT)
 
     opcao_menu = Button(image=None, pos=(640, 550), 
-                        text_input="BACK", font=get_font(75), base_color="Black", hovering_color="Green")
+                        text_input="SAIR", font=get_font(75), base_color="Black", hovering_color="Green")
     opcao_continuar = Button(image=None, pos=(640, 400), 
-                        text_input="CONTINUE", font=get_font(75), base_color="Black", hovering_color="Green")
+                        text_input="Aperte ESC para continuar", font=get_font(30), base_color="Black", hovering_color="Black")
 
     opcao_menu.changeColor(mouse_posicao)
     opcao_continuar.changeColor(mouse_posicao)

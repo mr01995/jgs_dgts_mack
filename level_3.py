@@ -12,7 +12,6 @@ import pygame
 from os import listdir
 from os.path import isfile, join
 
-# from pause import draw_pause_menu
 pygame.init()
 
 pygame.display.set_caption("Avalanche")
@@ -428,7 +427,7 @@ rain_group = pygame.sprite.Group()
 def main(window):
     clock = pygame.time.Clock()
     background, bg_image = get_background("bg_nivel_3.png")
-
+    pause = False
     block_size = 96
     saw_size = 96
     block_size_2 = 32
@@ -571,6 +570,8 @@ def main(window):
                     player.jump()
                 if event.key == pygame.K_w and player.jump_count < 2:
                     player.jump()
+                if event.key == pygame.K_ESCAPE:
+                    pause = not pause
 
         player.loop(FPS)
         fire.loop()
@@ -588,8 +589,8 @@ def main(window):
         handle_move(player, objects)
         draw(window, background, bg_image, player, objects, offset_x, offset_y)
 
-        # if pause:
-        #     draw_pause_menu(window)
+        if pause:
+            draw_pause_menu(window)
 
         if ((player.rect.bottom - offset_y >= HEIGHT - scroll_area_height) and player.y_vel > 0) or (
                 (player.rect.top - offset_y <= (scroll_area_height + 100)) and player.y_vel < 0):
