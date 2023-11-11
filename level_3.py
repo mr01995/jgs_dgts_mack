@@ -61,6 +61,13 @@ def get_block(size):
     surface.blit(image, (0, 0), rect)
     return pygame.transform.scale2x(surface)
 
+def get_chopper_size(size):
+    path = join("assets", "Chopper", "chopper.png")
+    image = pygame.image.load(path).convert_alpha()
+    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
+    rect = pygame.Rect(0, 0, 700, 331)
+    surface.blit(image, (0, 0), rect)
+    return pygame.transform.scale(surface,(420,420))
 
 def get_block_2(size):
     path = join("assets", "Terrain", "Terrain.png")
@@ -186,6 +193,9 @@ class Player(pygame.sprite.Sprite):
                         self.ANIMATION_DELAY) % len(sprites)
         self.sprite = sprites[sprite_index]
         self.animation_count += 1
+        if self.rect.y > 600:
+            from main import death
+            death()
         self.update()
 
     def update(self):
@@ -232,6 +242,13 @@ class Block_2(Object):
         self.image.blit(block_2, (0, 0))
         self.mask = pygame.mask.from_surface(self.image)
 
+class Chopper(Object):
+    def __init__(self, x, y, size):
+        super().__init__(x, y, size, size)
+        chopper = get_chopper_size(size)
+        self.image.blit(chopper, (0, 0))
+        self.mask = pygame.mask.from_surface(self.image)
+        self.name = "chopper"
 
 class Fire(Object):
     ANIMATION_DELAY = 3
@@ -387,18 +404,21 @@ def handle_move(player, objects):
     to_check = [collide_left, collide_right, *vertical_collide]
 
     for obj in to_check:
+        from main import death
         if obj and obj.name == "fire":
             player.make_hit()
             if player.life <= 0:
-                main(window)
+                death()
         if obj and obj.name == "saw":
             player.make_hit()
             if player.life <= 0:
-                main(window)
+                death()
         if obj and obj.name == "avalanche":
             player.make_hit()
             if player.life <= 0:
-                main(window)
+                death()
+        if obj and obj.name == "chopper":
+            print("vitoria")
 
 
 class Rain(pygame.sprite.Sprite):
@@ -436,7 +456,7 @@ class Avalanche(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height):
         super().__init__()
         self.rect = pygame.Rect(x, y, width, height)
-        self.x_vel = 3
+        self.x_vel = 20
         self.y_vel = 0
         self.mask = None
         self.name = "avalanche"
@@ -457,6 +477,8 @@ class Avalanche(pygame.sprite.Sprite):
         self.sprite = pygame.transform.rotate(self.sprite, 270)
         self.sprite = pygame.transform.scale(self.sprite, (1000, 540))
         self.animation_count += 1
+        if self.rect.x >= 6200:
+            self.rect.x = -900
         self.update()
 
     def update(self):
@@ -476,9 +498,11 @@ def main(window):
     block_size_2 = 32
     car_1_size = 84
     wave_size = 200
+    chopper_size = 330
 
-    player = Player(100, 100, 50, 50)
+    player = Player(6850, 100, 50, 50)
     avalanche = Avalanche(-1000, HEIGHT - wave_size * 2, 1000, 500)
+    chopper = Chopper(6990, HEIGHT - (chopper_size * 3) - 160, 720)
 
     for i in range(150):
         rain = Rain()
@@ -590,8 +614,15 @@ def main(window):
         Block(block_size * 60, HEIGHT - block_size * 4, block_size),
         Block(block_size * 61, HEIGHT - block_size * 3, block_size),
         Block(block_size * 62, HEIGHT - block_size * 2, block_size),
-        avalanche
-
+        avalanche,
+        Block(block_size * 66, HEIGHT - block_size * 1, block_size),
+        Block(block_size * 68, HEIGHT - block_size * 3, block_size),
+        Block(block_size * 69, HEIGHT - block_size * 4, block_size),
+        Block(block_size * 71, HEIGHT - block_size * 6, block_size),
+        Block(block_size * 72, HEIGHT - block_size * 7, block_size),
+        Block(block_size * 73, HEIGHT - block_size * 9, block_size),
+        Block(block_size * 74, HEIGHT - block_size * 10, block_size),
+        Block(block_size * 75, HEIGHT - block_size * 10, block_size),chopper
     ]
 
     # change where the screen starts

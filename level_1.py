@@ -643,8 +643,6 @@ def main(window):
         handle_move(player, objects)
         draw(window, background, bg_image, player, objects, offset_x, offset_y)
 
-        if pause:
-            draw_pause_menu(window)
 
 
         if ((player.rect.bottom - offset_y >= HEIGHT - scroll_area_height -50) and player.y_vel > 0) or (
