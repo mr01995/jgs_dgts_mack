@@ -14,9 +14,10 @@ pygame.display.set_caption("Heatwaves")
 
 WIDTH, HEIGHT = 1280, 720
 
-FPS = 120
+FPS = 180
 PLAYER_VEL = 5
 countdown = 0
+
 
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 
@@ -79,6 +80,7 @@ class Player(pygame.sprite.Sprite):
         self.jump_count = 0
         self.hit = False
         self.hit_count = 0
+        self.calor = True
         self.life = 20
         self.invincible = False
         self.god_timer = 500
@@ -247,6 +249,7 @@ class Bathtub(Object):
     def __init__(self, x, y, size):
         super().__init__(x, y, size, size)
         bathtub = get_bathtub_size(size)
+        self.name = "bathtub"
         self.image.blit(bathtub, (0, 0))
         self.mask = pygame.mask.from_surface(self.image)
 
@@ -264,6 +267,7 @@ class Closet(Object):
     def __init__(self, x, y, size):
         super().__init__(x, y, size, size)
         closet = get_closet_size(size)
+        self.name = "closet"
         self.image.blit(closet, (0, 0))
         self.mask = pygame.mask.from_surface(self.image)
 
@@ -281,6 +285,7 @@ class Sink(Object):
     def __init__(self, x, y, size):
         super().__init__(x, y, size, size)
         sink = get_sink_size(size)
+        self.name = "sink"
         self.image.blit(sink, (0, 0))
         self.mask = pygame.mask.from_surface(self.image)
 def get_stove_size(size):
@@ -296,6 +301,7 @@ class Stove(Object):
     def __init__(self, x, y, size):
         super().__init__(x, y, size, size)
         stove = get_stove_size(size)
+        self.name = "stove"
         self.image.blit(stove, (0, 0))
         self.mask = pygame.mask.from_surface(self.image)
 
@@ -312,6 +318,7 @@ class Toilet(Object):
     def __init__(self, x, y, size):
         super().__init__(x, y, size, size)
         toilet = get_toilet_size(size)
+        self.name = "toilet"
         self.image.blit(toilet, (0, 0))
         self.mask = pygame.mask.from_surface(self.image)
 
@@ -354,7 +361,7 @@ def draw(window, background, bg_image, player, objects, offset_x,  offset_y, cou
         pygame.draw.rect(window, max_life, (x, y, life_width, life_height))
         x += spacing
     
-    if countdown < 165:
+    if countdown < 175:
         window.blit(calor, (0,0))
     text = get_font(75).render(str(int(countdown)), True, (255, 255, 255))  # Renderiza o número como texto
     text_rect = text.get_rect(center=(640, 100))  # Centraliza o texto na tela
@@ -384,7 +391,7 @@ def handle_vertical_collision(player, objects, dy):
 def heat_damage(player, countdown):
     from main import death
     player.god_timer = 1000
-    if countdown < 165:
+    if countdown < 175 and player.calor == True:
         player.make_hit()
         if player.life <= 0:
             death()
@@ -425,11 +432,28 @@ def handle_move(player, objects):
     vertical_collide = handle_vertical_collision(player, objects, player.y_vel)
     to_check = [collide_left, collide_right, *vertical_collide]
 
+    encostando = False
+    
     for obj in to_check:
         if obj and obj.name == "fire":
            player.make_hit()
            if player.life <= 0:
                 death()
+        if obj and obj.name == "sink":
+           encostando = True
+           print("frio")
+        if obj and obj.name == "bathtub":
+           player.calor = False
+        if obj and obj.name == "toilet":
+           player.calor = False
+           print("frio")
+
+    if encostando:
+        player.calor = False
+    else:
+        if not any(obj and obj.name == "sink" for obj in objects):
+           player.calor = True
+           print("quente")
 
 
 def main(window):
@@ -439,7 +463,7 @@ def main(window):
     background, bg_image = get_background("bg_nivel_2.png")
     pause = False
     block_size = 96 
-    countdown = 10
+    countdown = 180
     
 
     bathtub_size = 62
@@ -577,7 +601,7 @@ def main(window):
     run = True
     while run:
         clock.tick(FPS)
-
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
@@ -610,7 +634,8 @@ def main(window):
             (player.rect.top - offset_y <= (scroll_area_height + 100)) and player.y_vel < 0):
                 offset_y += player.y_vel
             countdown -= clock.tick(FPS) / 1000
-        
+    
+
         if countdown <= 0:
             victory()
 
