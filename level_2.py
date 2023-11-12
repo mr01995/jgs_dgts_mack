@@ -20,6 +20,7 @@ countdown = 0
 
 
 window = pygame.display.set_mode((WIDTH, HEIGHT))
+background = pygame.image.load("assets/city/bg_nivel_2.png")
 
 calor = pygame.Surface((1280,720), pygame.SRCALPHA)  
 calor.fill((255, 228, 132, 60))
@@ -156,9 +157,7 @@ class Player(pygame.sprite.Sprite):
 
     def update_sprite(self):
         sprite_sheet = "idle"
-        if self.hit:
-            sprite_sheet = "hit"
-        elif self.y_vel < 0:
+        if self.y_vel < 0:
             if self.jump_count == 1:
                 sprite_sheet = "jump"
             elif self.jump_count == 2:
@@ -174,6 +173,9 @@ class Player(pygame.sprite.Sprite):
                         self.ANIMATION_DELAY) % len(sprites)
         self.sprite = sprites[sprite_index]
         self.animation_count += 1
+        if self.rect.y > 650:
+            from main import death
+            death()
         self.update()
 
     def update(self):
@@ -240,7 +242,7 @@ def get_bathtub_size(size):
     path = join("assets", "House", "bathtub.png")
     image = pygame.image.load(path).convert_alpha()
     surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
-    rect = pygame.Rect(0, 0, 720, size)
+    rect = pygame.Rect(0, 0, 200, size)
     surface.blit(image, (0, 0), rect)
     return pygame.transform.scale2x(surface)
 class Bathtub(Object):
@@ -256,7 +258,7 @@ def get_closet_size(size):
     path = join("assets", "House", "closet.png")
     image = pygame.image.load(path).convert_alpha()
     surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
-    rect = pygame.Rect(0, 0, 720, size)
+    rect = pygame.Rect(0, 0, 200, size)
     surface.blit(image, (0, 0), rect)
     return pygame.transform.scale2x(surface)
 class Closet(Object):
@@ -272,7 +274,7 @@ def get_sink_size(size):
     path = join("assets", "House", "sink.png")
     image = pygame.image.load(path).convert_alpha()
     surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
-    rect = pygame.Rect(0, 0, 720, size)
+    rect = pygame.Rect(0, 0, 200, size)
     surface.blit(image, (0, 0), rect)
     return surface
 class Sink(Object):
@@ -286,7 +288,7 @@ def get_stove_size(size):
     path = join("assets", "House", "stove.png")
     image = pygame.image.load(path).convert_alpha()
     surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
-    rect = pygame.Rect(0, 0, 720, size)
+    rect = pygame.Rect(0, 0, 200, size)
     surface.blit(image, (0, 0), rect)
     return surface
 class Stove(Object):
@@ -301,7 +303,7 @@ def get_toilet_size(size):
     path = join("assets", "House", "toilet.png")
     image = pygame.image.load(path).convert_alpha()
     surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
-    rect = pygame.Rect(0, 0, 720, size)
+    rect = pygame.Rect(0, 0, 200, size)
     surface.blit(image, (0, 0), rect)
     return pygame.transform.scale2x(surface)
 class Toilet(Object):
@@ -316,7 +318,7 @@ def get_table_size(size):
     path = join("assets", "House", "table.png")
     image = pygame.image.load(path).convert_alpha()
     surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
-    rect = pygame.Rect(0, 0, 720, size)
+    rect = pygame.Rect(0, 0, 200, size)
     surface.blit(image, (0, 0), rect)
     return surface
 class Table(Object):
@@ -343,20 +345,11 @@ class Fridge(Object):
 
 def get_background(name):
     image = pygame.image.load(join("assets", "city", name))
-    _, _, width, height = image.get_rect()
-    tiles = []
-
-    for i in range(WIDTH // width + 1):
-        for j in range(HEIGHT // height + 1):
-            pos = (i * width, j * height)
-            tiles.append(pos)
-
-    return tiles, image
+    return image
 
 
-def draw(window, background, bg_image, player, objects, offset_x,  offset_y, countdown, pause):
-    for tile in background:
-        window.blit(bg_image, tile)
+def draw(window, player, objects, offset_x,  offset_y, countdown, pause):
+    window.blit(background, (0,0))
 
     for obj in objects:
         obj.draw(window, offset_x,  offset_y)
@@ -439,7 +432,6 @@ def collide(player, objects, dx):
 
 
 def handle_move(player, objects):
-    from main import death
 
     keys = pygame.key.get_pressed()
 
@@ -461,16 +453,14 @@ def handle_move(player, objects):
 
     
     for obj in to_check:
-        if obj and obj.name == "fire":
-           player.make_hit()
-           if player.life <= 0:
-                death()
         if obj and obj.name == "sink":
            player.calor = False
            player.god_timer = 10000
            print("frio")
         if obj and obj.name == "bathtub":
+           print("banheira frio")
            player.calor = False
+           player.colliding = True
         if obj and obj.name == "toilet":
            player.calor = False
            print("frio")
@@ -480,10 +470,10 @@ def handle_move(player, objects):
 
 
 def main(window):
+
     from main import victory
-    
+
     clock = pygame.time.Clock()
-    background, bg_image = get_background("bg_nivel_2.png")
     pause = False
     block_size = 96 
     countdown = 180
@@ -495,21 +485,19 @@ def main(window):
     closet_size = 110
     closet = Closet(1300, HEIGHT - closet_size * 4.6 - 58, 200)
     sink_size = 80
-    sink = Sink(1300, HEIGHT - sink_size * 9.3 - 58, 200)
-    stove_size = 80
-    stove = Stove(2000, HEIGHT - stove_size * 1.8 - 58, 200)
+    sink = Sink(2200, HEIGHT - sink_size * 9.3 - 58, 200)
+    stove_size = 145
+    stove = Stove(2000, HEIGHT - stove_size, 200)
     toilet_size = 80
     toilet = Toilet(1400, HEIGHT - toilet_size * 9.3 - 58, 200)
     table_size = 80
     table = Table(1200, HEIGHT - table_size * 2.02 - 58, 200)
-    fridge_size = 80
-    fridge = Fridge(1900, HEIGHT - fridge_size * 1.8 - 58, 720)
-    fire = Fire(1250, HEIGHT - block_size - 130, 16, 32)
-
-    fire.on()
+    fridge_size = 180
+    fridge = Fridge(1900, HEIGHT - fridge_size, 200)
+    
     # esse for de cima vai colocar mais blocos no chão
     floor = [Block(i * block_size, HEIGHT - block_size, block_size)
-             for i in range(-WIDTH // block_size, (WIDTH * 5) // block_size)]
+             for i in range(-WIDTH // block_size, (WIDTH * 2) // block_size)]
 
     # um desses aqui coloca blocos na tela
     objects = [*floor,
@@ -518,7 +506,7 @@ def main(window):
                closet,
                sink,
                stove,
-               toilet,table, fire, fridge,
+               toilet,table, fridge,
                Block(block_size * 10, HEIGHT - block_size * 3, block_size),
                Block(block_size * 10, HEIGHT - block_size * 4, block_size),
                Block(block_size * 10, HEIGHT - block_size * 5, block_size),
@@ -536,6 +524,7 @@ def main(window):
                Block(block_size * 25, HEIGHT - block_size * 4, block_size),
                Block(block_size * 25, HEIGHT - block_size * 5, block_size),
                Block(block_size * 25, HEIGHT - block_size * 6, block_size),
+               Block(block_size * 25, HEIGHT - block_size * 2, block_size),
                Block(block_size * 25, HEIGHT - block_size * 7, block_size),
                Block(block_size * 25, HEIGHT - block_size * 8, block_size),
                Block(block_size * 25, HEIGHT - block_size * 9, block_size),
@@ -598,7 +587,7 @@ def main(window):
                Block(block_size * 16, HEIGHT - block_size * 7, block_size/2),
                Block(block_size * 16.5, HEIGHT - block_size * 7, block_size/2),
                Block(block_size * 17, HEIGHT - \
-                     block_size * 7, block_size/2), fire,
+                     block_size * 7, block_size/2),
                Block(block_size * 17.5, HEIGHT - block_size * 7, block_size/2),
                Block(block_size * 18, HEIGHT - block_size * 7, block_size/2),
                Block(block_size * 18.5, HEIGHT - \
@@ -648,9 +637,8 @@ def main(window):
         if pause == False:
             player.loop(FPS)
             heat_damage(player, countdown)
-            fire.loop()
             handle_move(player, objects)
-        draw(window, background, bg_image, player, objects, offset_x,  offset_y, countdown, pause)
+        draw(window, player, objects, offset_x,  offset_y, countdown, pause)
         
 
         if pause == False:
@@ -665,7 +653,6 @@ def main(window):
 
         if countdown <= 0:
             victory()
-
     pygame.quit()
     quit()
 
