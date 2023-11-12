@@ -15,7 +15,7 @@ pygame.display.set_caption("Heatwaves")
 WIDTH, HEIGHT = 1280, 720
 
 FPS = 180
-PLAYER_VEL = 5
+PLAYER_VEL = 10
 countdown = 0
 
 
@@ -87,7 +87,7 @@ class Player(pygame.sprite.Sprite):
         self.hit_timer = 0
         self.jump_sound = pygame.mixer.Sound('assets/Audio/jump.wav')
         self.jump_sound.set_volume(0.5)
-        self.hit_sound = pygame.mixer.Sound('assets/Audio/hit.wav')
+        #self.hit_sound = pygame.mixer.Sound('assets/Audio/hit.wav')
 
     def jump(self):
         self.y_vel = -self.GRAVITY * 8
@@ -140,7 +140,7 @@ class Player(pygame.sprite.Sprite):
     def take_hit(self):
         if not self.invincible:
             self.life -= 1
-            self.hit_sound.play()
+            #self.hit_sound.play()
             self.invincible = True
             self.hit_timer = pygame.time.get_ticks()
 
@@ -243,8 +243,6 @@ def get_bathtub_size(size):
     rect = pygame.Rect(0, 0, 720, size)
     surface.blit(image, (0, 0), rect)
     return pygame.transform.scale2x(surface)
-
-
 class Bathtub(Object):
     def __init__(self, x, y, size):
         super().__init__(x, y, size, size)
@@ -261,8 +259,6 @@ def get_closet_size(size):
     rect = pygame.Rect(0, 0, 720, size)
     surface.blit(image, (0, 0), rect)
     return pygame.transform.scale2x(surface)
-
-
 class Closet(Object):
     def __init__(self, x, y, size):
         super().__init__(x, y, size, size)
@@ -278,25 +274,21 @@ def get_sink_size(size):
     surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
     rect = pygame.Rect(0, 0, 720, size)
     surface.blit(image, (0, 0), rect)
-    return pygame.transform.scale2x(surface)
-
-
+    return surface
 class Sink(Object):
     def __init__(self, x, y, size):
         super().__init__(x, y, size, size)
         sink = get_sink_size(size)
         self.name = "sink"
         self.image.blit(sink, (0, 0))
-        self.mask = pygame.mask.from_surface(self.image)
+        
 def get_stove_size(size):
     path = join("assets", "House", "stove.png")
     image = pygame.image.load(path).convert_alpha()
     surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
     rect = pygame.Rect(0, 0, 720, size)
     surface.blit(image, (0, 0), rect)
-    return pygame.transform.scale2x(surface)
-
-
+    return surface
 class Stove(Object):
     def __init__(self, x, y, size):
         super().__init__(x, y, size, size)
@@ -312,8 +304,6 @@ def get_toilet_size(size):
     rect = pygame.Rect(0, 0, 720, size)
     surface.blit(image, (0, 0), rect)
     return pygame.transform.scale2x(surface)
-
-
 class Toilet(Object):
     def __init__(self, x, y, size):
         super().__init__(x, y, size, size)
@@ -321,6 +311,34 @@ class Toilet(Object):
         self.name = "toilet"
         self.image.blit(toilet, (0, 0))
         self.mask = pygame.mask.from_surface(self.image)
+
+def get_table_size(size):
+    path = join("assets", "House", "table.png")
+    image = pygame.image.load(path).convert_alpha()
+    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
+    rect = pygame.Rect(0, 0, 720, size)
+    surface.blit(image, (0, 0), rect)
+    return surface
+class Table(Object):
+    def __init__(self, x, y, size):
+        super().__init__(x, y, size, size)
+        table = get_table_size(size)
+        self.name = "table"
+        self.image.blit(table, (0, 0))
+
+def get_fridge_size(size):
+    path = join("assets", "House", "fridge.png")
+    image = pygame.image.load(path).convert_alpha()
+    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
+    rect = pygame.Rect(0, 0, 720, size)
+    surface.blit(image, (0, 0), rect)
+    return pygame.transform.scale(surface, (128, 128))
+class Fridge(Object):
+    def __init__(self, x, y, size):
+        super().__init__(x, y, size, size)
+        fridge = get_fridge_size(size)
+        self.name = "fridge"
+        self.image.blit(fridge, (0, 0))
 
 
 def get_background(name):
@@ -376,7 +394,16 @@ def draw(window, background, bg_image, player, objects, offset_x,  offset_y, cou
 def handle_vertical_collision(player, objects, dy):
     collided_objects = []
     for obj in objects:
+        
         if pygame.sprite.collide_mask(player, obj):
+            if obj.name == "sink":
+                continue
+            if obj.name == "fire":
+                continue
+            if obj.name == "table":
+                continue
+            if obj.name == "fridge":
+                continue
             if dy > 0:
                 player.rect.bottom = obj.rect.top
                 player.landed()
@@ -461,20 +488,24 @@ def main(window):
     block_size = 96 
     countdown = 180
     
+    player = Player(100, 100, 50, 50)
 
     bathtub_size = 62
-    bathtub = Bathtub(100, HEIGHT - bathtub_size * 2 - 58, 720)
+    bathtub = Bathtub(1100, HEIGHT - bathtub_size * 11.3 - 58, 200)
     closet_size = 110
-    closet = Closet(400, HEIGHT - closet_size * 2 - 58, 720)
+    closet = Closet(1300, HEIGHT - closet_size * 4.6 - 58, 200)
     sink_size = 80
-    sink = Sink(700, HEIGHT - sink_size * 2 - 58, 720)
+    sink = Sink(1300, HEIGHT - sink_size * 9.3 - 58, 200)
     stove_size = 80
-    stove = Stove(1200, HEIGHT - stove_size * 2 - 58, 720)
+    stove = Stove(2000, HEIGHT - stove_size * 1.8 - 58, 200)
     toilet_size = 80
-    toilet = Toilet(1600, HEIGHT - toilet_size * 2 - 58, 720)
+    toilet = Toilet(1400, HEIGHT - toilet_size * 9.3 - 58, 200)
+    table_size = 80
+    table = Table(1200, HEIGHT - table_size * 2.02 - 58, 200)
+    fridge_size = 80
+    fridge = Fridge(1900, HEIGHT - fridge_size * 1.8 - 58, 720)
+    fire = Fire(1250, HEIGHT - block_size - 130, 16, 32)
 
-    player = Player(100, 100, 50, 50)
-    fire = Fire(block_size * 14, HEIGHT - block_size - 64, 16, 32)
     fire.on()
     # esse for de cima vai colocar mais blocos no chão
     floor = [Block(i * block_size, HEIGHT - block_size, block_size)
@@ -487,7 +518,7 @@ def main(window):
                closet,
                sink,
                stove,
-               toilet,
+               toilet,table, fire, fridge,
                Block(block_size * 10, HEIGHT - block_size * 3, block_size),
                Block(block_size * 10, HEIGHT - block_size * 4, block_size),
                Block(block_size * 10, HEIGHT - block_size * 5, block_size),
@@ -535,7 +566,7 @@ def main(window):
                Block(block_size * 16, HEIGHT - block_size * 4, block_size/2),
                Block(block_size * 16.5, HEIGHT - block_size * 4, block_size/2),
                Block(block_size * 17, HEIGHT - \
-                     block_size * 4, block_size/2), fire,
+                     block_size * 4, block_size/2), 
                Block(block_size * 17.5, HEIGHT - block_size * 4, block_size/2),
                Block(block_size * 18, HEIGHT - block_size * 4, block_size/2),
                Block(block_size * 18.5, HEIGHT - \
