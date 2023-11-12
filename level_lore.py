@@ -155,7 +155,7 @@ def level_2():
 def level_3():
     from main import level_select
 
-    texto_3 = ""
+    texto_3 = "Os tempos mudaram. Jalin Rabei está em uma expedição na Antártida em busca de recursos novos que descongelaram com o aquecimento global. Mas, um passo em falso, despertaram O Avalanche, devido ao derretimento das montanhas de gelo. Seu objetivo é encontrar maneiras de sobreviver às ondas inacabáveis de gelo escorrendo pela montanha e alcançar o ponto de fuga."
     text(texto_3)
 
     while True:

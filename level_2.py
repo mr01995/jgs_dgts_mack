@@ -447,9 +447,7 @@ def handle_move(player, objects):
         if obj and obj.name == "toilet":
            player.calor = False
            print("frio")
-        else:
-            player.calor = True
-            print('quente')
+        
 
     
 
