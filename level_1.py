@@ -2,6 +2,8 @@ import pygame
 from os import listdir
 from os.path import isfile, join
 import random
+from button import *
+from pause import draw_pause_menu
 
 pygame.init()
 
@@ -268,7 +270,7 @@ class Wave(pygame.sprite.Sprite):
                         self.ANIMATION_DELAY) % len(sprites)
         self.sprite = sprites[sprite_index]
         self.sprite = pygame.transform.rotate(self.sprite, 270)
-        self.sprite = pygame.transform.scale(self.sprite, (960, 540))
+        self.sprite = pygame.transform.scale(self.sprite, (1500, 540))
         self.animation_count += 1
         self.update()
 
@@ -379,7 +381,7 @@ def get_background(name):
     return tiles, image
 
 
-def draw(window, background, bg_image, player, objects, offset_x, offset_y):
+def draw(window, background, bg_image, player, objects, offset_x, offset_y, PAUSE):
     for tile in background:
         window.blit(bg_image, tile)
 
@@ -403,7 +405,8 @@ def draw(window, background, bg_image, player, objects, offset_x, offset_y):
                          (x, y, life_width, life_height))
         x += spacing
     
-    
+    if PAUSE:
+        draw_pause_menu(window)
 
     pygame.display.update()
 
@@ -437,9 +440,8 @@ def collide(player, objects, dx):
     player.update()
     return collided_object
 
-
 def handle_move(player, objects):
-    from main import death
+    from main import death, victory
     keys = pygame.key.get_pressed()
 
     player.x_vel = 0
@@ -473,7 +475,7 @@ def handle_move(player, objects):
             if player.life <= 0:
                 death()
         if obj and obj.name == "ship":
-            WIN = True
+            victory()
 
 rain_img = pygame.image.load('assets/Background/rain.png')
 rain_img = pygame.transform.scale(rain_img, (16, 16))
@@ -483,7 +485,6 @@ rain_group = pygame.sprite.Group()
 def main(window):
     clock = pygame.time.Clock()
     background, bg_image = get_background("bg_nivel_1.png")
-    pause = False
     block_size = 96
     saw_size = 96
     block_size_2 = 32
@@ -641,7 +642,7 @@ def main(window):
         saw.loop()
         saw_1.loop()
         handle_move(player, objects)
-        draw(window, background, bg_image, player, objects, offset_x, offset_y)
+        draw(window, background, bg_image, player, objects, offset_x, offset_y, PAUSE)
 
 
 

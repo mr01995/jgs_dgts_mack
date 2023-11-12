@@ -325,7 +325,7 @@ def get_background(name):
     return tiles, image
 
 
-def draw(window, background, bg_image, player, objects, offset_x, offset_y):
+def draw(window, background, bg_image, player, objects, offset_x, offset_y, pause):
     for tile in background:
         window.blit(bg_image, tile)
 
@@ -349,6 +349,9 @@ def draw(window, background, bg_image, player, objects, offset_x, offset_y):
         pygame.draw.rect(window, lost_life_color,
                          (x, y, life_width, life_height))
         x += spacing
+    
+    if pause:
+        draw_pause_menu(window)
 
     pygame.display.update()
 
@@ -384,6 +387,7 @@ def collide(player, objects, dx):
 
 
 def handle_move(player, objects):
+    from main import victory, death
     keys = pygame.key.get_pressed()
 
     player.x_vel = 0
@@ -398,7 +402,6 @@ def handle_move(player, objects):
         player.move_left(PLAYER_VEL)
     if keys[pygame.K_d] and not collide_right:
         player.move_right(PLAYER_VEL)
-    # if keys[pygame.K_ESCAPE]:
 
     vertical_collide = handle_vertical_collision(player, objects, player.y_vel)
     to_check = [collide_left, collide_right, *vertical_collide]
@@ -418,7 +421,7 @@ def handle_move(player, objects):
             if player.life <= 0:
                 death()
         if obj and obj.name == "chopper":
-            print("vitoria")
+            victory()
 
 
 class Rain(pygame.sprite.Sprite):
@@ -649,37 +652,35 @@ def main(window):
                     player.jump()
                 if event.key == pygame.K_ESCAPE:
                     pause = not pause
+        if pause == False:
+            player.loop(FPS)
+            fire.loop()
+            fire_2.loop()
+            fire_3.loop()
+            fire_4.loop()
+            fire_5.loop()
+            fire_6.loop()
+            fire_7.loop()
+            fire_8.loop()
+            fire_9.loop()
+            fire_10.loop()
+            saw.loop()
+            saw_1.loop()
+            saw_2.loop()
+            saw_3.loop()
+            saw_4.loop()
+            avalanche.loop()
+            handle_move(player, objects)
+        draw(window, background, bg_image, player, objects, offset_x, offset_y, pause)
 
-        player.loop(FPS)
-        fire.loop()
-        fire_2.loop()
-        fire_3.loop()
-        fire_4.loop()
-        fire_5.loop()
-        fire_6.loop()
-        fire_7.loop()
-        fire_8.loop()
-        fire_9.loop()
-        fire_10.loop()
-        saw.loop()
-        saw_1.loop()
-        saw_2.loop()
-        saw_3.loop()
-        saw_4.loop()
-        avalanche.loop()
-        handle_move(player, objects)
-        draw(window, background, bg_image, player, objects, offset_x, offset_y)
+        if pause == False:
+            if ((player.rect.bottom - offset_y >= HEIGHT - scroll_area_height) and player.y_vel > 0) or (
+                    (player.rect.top - offset_y <= (scroll_area_height + 100)) and player.y_vel < 0):
+                offset_y += player.y_vel
 
-        if pause:
-            draw_pause_menu(window)
-
-        if ((player.rect.bottom - offset_y >= HEIGHT - scroll_area_height) and player.y_vel > 0) or (
-                (player.rect.top - offset_y <= (scroll_area_height + 100)) and player.y_vel < 0):
-            offset_y += player.y_vel
-
-        if ((player.rect.right - offset_x >= WIDTH - scroll_area_width) and player.x_vel > 0) or (
-                (player.rect.left - offset_x <= scroll_area_width) and player.x_vel < 0):
-            offset_x += player.x_vel
+            if ((player.rect.right - offset_x >= WIDTH - scroll_area_width) and player.x_vel > 0) or (
+                    (player.rect.left - offset_x <= scroll_area_width) and player.x_vel < 0):
+                offset_x += player.x_vel
 
         rain_group.update()
         rain_group.draw(window)

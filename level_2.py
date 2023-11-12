@@ -21,8 +21,8 @@ countdown = 0
 
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 
-calor = pygame.Surface((1280,720), pygame.SRCALPHA)  
-calor.fill((255, 228, 132, 60))
+calor_imagem = pygame.Surface((1280,720), pygame.SRCALPHA)  
+calor_imagem.fill((255, 228, 132, 60))
 
 def flip(sprites):
     return [pygame.transform.flip(sprite, True, False) for sprite in sprites]
@@ -80,7 +80,7 @@ class Player(pygame.sprite.Sprite):
         self.jump_count = 0
         self.hit = False
         self.hit_count = 0
-        self.calor = True
+        self.calor = 0
         self.life = 20
         self.invincible = False
         self.god_timer = 500
@@ -192,12 +192,20 @@ class Object(pygame.sprite.Sprite):
         self.width = width
         self.height = height
         self.name = name
+        self.sprite = None
 
     def draw(self, win, offset_x,  offset_y):
         win.blit(self.image, (self.rect.x - offset_x, self.rect.y - offset_y))
 
 
 class Block(Object):
+    def __init__(self, x, y, size):
+        super().__init__(x, y, size, size)
+        block = get_block(size)
+        self.image.blit(block, (0, 0))
+        self.mask = pygame.mask.from_surface(self.image)
+
+class Wood(Object):
     def __init__(self, x, y, size):
         super().__init__(x, y, size, size)
         block = get_block(size)
@@ -373,14 +381,19 @@ def draw(window, background, bg_image, player, objects, offset_x,  offset_y, cou
     for i in range(player.life):
         pygame.draw.rect(window, actual_life, (x, y, life_width, life_height))
         x += spacing
-
-
     for i in range(player.life, 20): 
         pygame.draw.rect(window, max_life, (x, y, life_width, life_height))
         x += spacing
     
+    for i in range(player.life):
+        pygame.draw.rect(window, actual_life, (x, y, life_width, life_height))
+        x += spacing
+    for i in range(player.life, 20): 
+        pygame.draw.rect(window, max_life, (x, y, life_width, life_height))
+        x += spacing
+
     if countdown < 175:
-        window.blit(calor, (0,0))
+        window.blit(calor_imagem, (0,0))
     text = get_font(75).render(str(int(countdown)), True, (255, 255, 255))  # Renderiza o número como texto
     text_rect = text.get_rect(center=(640, 100))  # Centraliza o texto na tela
     window.blit(text, text_rect) 
@@ -418,7 +431,7 @@ def handle_vertical_collision(player, objects, dy):
 def heat_damage(player, countdown):
     from main import death
     player.god_timer = 1000
-    if countdown < 175 and player.calor == True:
+    if countdown < 175 and player.calor > 1000:
         player.make_hit()
         if player.life <= 0:
             death()
@@ -466,17 +479,12 @@ def handle_move(player, objects):
            if player.life <= 0:
                 death()
         if obj and obj.name == "sink":
-           player.calor = False
-           player.god_timer = 10000
-           print("frio")
+           player.calor -= 20
         if obj and obj.name == "bathtub":
-           player.calor = False
+           player.calor -= 50
         if obj and obj.name == "toilet":
-           player.calor = False
-           print("frio")
+           player.calor -= 2
         
-
-    
 
 
 def main(window):
@@ -495,15 +503,15 @@ def main(window):
     closet_size = 110
     closet = Closet(1300, HEIGHT - closet_size * 4.6 - 58, 200)
     sink_size = 80
-    sink = Sink(1300, HEIGHT - sink_size * 9.3 - 58, 200)
-    stove_size = 80
-    stove = Stove(2000, HEIGHT - stove_size * 1.8 - 58, 200)
+    sink = Sink(2200, HEIGHT - sink_size * 9.3 - 58, 200)
+    stove_size = 145
+    stove = Stove(2000, HEIGHT - stove_size, 200)
     toilet_size = 80
     toilet = Toilet(1400, HEIGHT - toilet_size * 9.3 - 58, 200)
     table_size = 80
     table = Table(1200, HEIGHT - table_size * 2.02 - 58, 200)
-    fridge_size = 80
-    fridge = Fridge(1900, HEIGHT - fridge_size * 1.8 - 58, 720)
+    fridge_size = 180
+    fridge = Fridge(1900, HEIGHT - fridge_size, 200)
     fire = Fire(1250, HEIGHT - block_size - 130, 16, 32)
 
     fire.on()
@@ -647,9 +655,15 @@ def main(window):
                         
         if pause == False:
             player.loop(FPS)
+            if player.calor < 0:
+                player.calor = 0
+            else:
+                player.calor += 1
+                print(player.calor)
             heat_damage(player, countdown)
             fire.loop()
             handle_move(player, objects)
+            
         draw(window, background, bg_image, player, objects, offset_x,  offset_y, countdown, pause)
         
 
