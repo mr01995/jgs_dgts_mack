@@ -6,6 +6,7 @@ from button import *
 from pause import draw_pause_menu
 
 pygame.init()
+pygame.mixer.init()
 
 pygame.display.set_caption("Flood Flow Enchente")
 
@@ -14,7 +15,9 @@ FPS = 60
 PLAYER_VEL = 6
 
 window = pygame.display.set_mode((WIDTH, HEIGHT))
-
+level_bg_music = pygame.mixer.music.load('assets/Audio/level_music.wav')
+pygame.mixer.music.play()
+pygame.mixer.music.play(-1)
 
 def flip(sprites):
     return [pygame.transform.flip(sprite, True, False) for sprite in sprites]
@@ -96,14 +99,18 @@ class Player(pygame.sprite.Sprite):
         self.jump_count = 0
         self.hit = False
         self.hit_count = 0
-        self.life = 5
+        self.life = 10
         self.god = False
         self.god_timer = 500
         self.hit_timer = 0
+        self.jump_sound = pygame.mixer.Sound('assets/Audio/jump.wav')
+        self.jump_sound.set_volume(0.5)
+        self.hit_sound = pygame.mixer.Sound('assets/Audio/hit.wav')
 
     def jump(self):
         self.y_vel = -self.GRAVITY * 8
         self.animation_count = 0
+        self.jump_sound.play()
         self.jump_count += 1
         if self.jump_count == 1:
             self.fall_count = 0
@@ -123,6 +130,7 @@ class Player(pygame.sprite.Sprite):
 
     def take_hit(self):
         if not self.god:
+            self.hit_sound.play()
             self.life -= 1
             self.god = True
             self.hit_timer = pygame.time.get_ticks()
@@ -763,7 +771,7 @@ def main(window):
         rain_group.update()
         rain_group.draw(window)
         pygame.display.flip()
-
+    pygame.mixer.quit()
     pygame.quit()
     quit()
 

@@ -62,7 +62,33 @@ def level_1():
     from main import level_select
 
     texto_1 = "Os tempos mudaram. Sofia Cinta Damai mora na Mooca e, com as mudanças climáticas, seres ancestrais despertaram. O Ciclone Katrina invadiu Brasil e está criando enchentes em São Paulo. A Única esperança de Sofia é fugir da correnteza de água, pulando por cima de carros e outros objetos para não ser pega na inundação. Seu objetivo é alcançar o barco para que sobreviva à São Paulo submerso"
-    text(texto_1)
+    
+    max_line_length = 30
+    text_lines = []
+    current_line = ""
+
+    for word in texto_1.split():
+        if len(current_line) + len(word) <= max_line_length:
+            current_line +=word +" "
+        else:
+            text_lines.append(current_line)
+            current_line = word +" "
+    if current_line:
+        text_lines.append(current_line)
+
+    text_rendered = [get_font(30).render(line, True, (255, 255, 255)) for line in text_lines]
+
+    text_x = 600
+    text_y = 150
+
+    # Exibe o texto renderizado na superficie lore_screen
+    for line_rendered in text_rendered:
+        lore_screen.blit(line_rendered, (text_x, text_y))
+        # Avança pra proxima linha
+        text_y += line_rendered.get_height() + 5
+
+
+
     personagem = "assets/MainCharacters/NinjaFrog/foto-inicial-ninja-frog.png"
     imgem_personagem = pygame.image.load(personagem).convert_alpha()
     imgem_personagem = pygame.transform.scale(
@@ -84,7 +110,10 @@ def level_1():
         title_rect = title_text.get_rect(center=(container_width-200, container_height-580))
         window.blit(title_text, title_rect)
 
-        get_text()
+        lore_x = (WIDTH - container_width) // 2
+        lore_y = (HEIGHT - container_height) // 2
+        window.blit(lore_screen, (lore_x, lore_y))
+    
 
         play_button = Button(image=pygame.image.load("assets/ButtonStyle/Play Rect.png"), pos=(container_width-770, container_height-160),
                              text_input="Começar", font=get_font(35), base_color="White", hovering_color="Green")

@@ -139,6 +139,36 @@ class Tree(Object):
         self.name = "tree"
         self.image.blit(tree, (0, 0))
 
+def get_tree2_size(size):
+    path = join("assets", "House", "jungle_tree_1.png")
+    image = pygame.image.load(path).convert_alpha()
+    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
+    rect = pygame.Rect(0, 0, 200, size)
+    surface.blit(image, (0, 0), rect)
+    return pygame.transform.scale2x(surface)
+class Tree2(Object):
+    def __init__(self, x, y, size):
+        super().__init__(x, y, size, size)
+        tree2 = get_tree2_size(size)
+        self.name = "tree2"
+        self.image.blit(tree2, (0, 0))
+
+def get_tree3_size(size):
+    path = join("assets", "House", "birch_1.png")
+    image = pygame.image.load(path).convert_alpha()
+    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
+    rect = pygame.Rect(0, 0, 200, size)
+    surface.blit(image, (0, 0), rect)
+    return pygame.transform.scale2x(surface)
+class Tree3(Object):
+    def __init__(self, x, y, size):
+        super().__init__(x, y, size, size)
+        tree3 = get_tree3_size(size)
+        self.name = "tree3"
+        self.image.blit(tree3, (0, 0))
+
+
+
 def get_door_size(size):
     path = join("assets", "House", "Door_02.png")
     image = pygame.image.load(path).convert_alpha()
@@ -194,3 +224,32 @@ class Fridge(Object):
         fridge = get_fridge_size(size)
         self.name = "fridge"
         self.image.blit(fridge, (0, 0))
+
+def get_bush3_size(size):
+    path = join("assets", "House", "Bush3.png")
+    image = pygame.image.load(path).convert_alpha()
+    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
+    rect = pygame.Rect(0, 0, 200, size)
+    surface.blit(image, (0, 0), rect)
+    return pygame.transform.scale2x(surface)
+class Bush3(Object):
+    def __init__(self, x, y, size):
+        super().__init__(x, y, size, size)
+        bush3 = get_bush3_size(size)
+        self.name = "bush3"
+        self.image.blit(bush3, (0, 0))
+
+def get_car_size(size):
+    path = join("assets", "Cars", "Jeep_1", "Idle.png")
+    image = pygame.image.load(path).convert_alpha()
+    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
+    rect = pygame.Rect(0, 0, 720, size)
+    surface.blit(image, (0, 0), rect)
+    return pygame.transform.scale2x(surface)
+class Car(Object):
+    def __init__(self, x, y, size):
+        super().__init__(x, y, size, size)
+        car = get_car_size(size)
+        self.image.blit(car, (0, 0))
+        self.name = "car"
+        self.mask = pygame.mask.from_surface(self.image)

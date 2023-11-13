@@ -14,7 +14,7 @@ pygame.display.set_caption("Heatwaves")
 
 WIDTH, HEIGHT = 1280, 720
 
-FPS = 120
+FPS = 180
 PLAYER_VEL = 7
 countdown = 0
 
@@ -290,8 +290,6 @@ def handle_vertical_collision(player, objects, dy):
                 continue
             if obj.name == "fridge":
                 continue
-            if obj.name == "tree":
-                continue
             if obj.name == "door":
                 continue
             if obj.name == "bush1":
@@ -358,9 +356,7 @@ def handle_move(player, objects):
     
     for obj in to_check:
         if obj and obj.name == "fire":
-            player.make_hit()
-            if player.life <= 0:
-                death()
+            player.calor += 30
         if obj and obj.name == "sink":
            player.calor -= 10
         if obj and obj.name == "bathtub":
@@ -371,11 +367,17 @@ def handle_move(player, objects):
            player.calor -= 30
         if obj and obj.name == "tree":
            player.calor -= 5
-        
-
+        if obj and obj.name == "stove":
+           player.calor += 10
+        if obj and obj.name == "tree2":
+           player.calor -= 2
+        if obj and obj.name == "car":
+           player.calor += 40
+        if obj and obj.name == "tree3":
+           player.calor -= 30
         
 def main(window):
-    from objects import Bathtub, Closet, Sink, Stove, Toilet, Table, Fridge, Tree, Fire, Bush1, Door, Bush2
+    from objects import Bathtub, Closet, Sink, Stove, Toilet, Table, Fridge, Tree, Fire, Bush1, Bush2, Bush3, Tree2, Car, Tree3
     from main import victory
 
     clock = pygame.time.Clock()
@@ -383,7 +385,7 @@ def main(window):
     block_size = 96 
     countdown = 180
     
-    player = Player(250, 600, 50, 50)
+    player = Player(450, 600, 50, 50)
 
     bathtub = Bathtub(1100, HEIGHT - 810    , 200)
     closet_size = 110
@@ -397,8 +399,7 @@ def main(window):
     table_size = 80
     table = Table(1200, HEIGHT - table_size * 2.02 - 58, 200)
     fridge = Fridge(2000, HEIGHT - 240, 500)
-    door = Door(960, HEIGHT - 200, 500)
-    tree = Tree(-200, HEIGHT - 594, 500)
+    bush3 = Bush3(140, HEIGHT - 230, 500)
     bush1 = Bush1(350, HEIGHT - 155, 500)
     bush2 = Bush2(600, HEIGHT - 205, 500)
     fire = Fire(1250, HEIGHT - block_size - 130, 16, 32)
@@ -406,7 +407,7 @@ def main(window):
 
     # esse for de cima vai colocar mais blocos no chão
     floor = [Block(i * block_size, HEIGHT - block_size, block_size)
-             for i in range(-WIDTH // block_size, (WIDTH * 2) // block_size)]
+             for i in range((-WIDTH * 2) // block_size, (WIDTH * 2) // block_size)]
 
     # um desses aqui coloca blocos na tela
     objects = [*floor,
@@ -415,7 +416,7 @@ def main(window):
                bathtub,
                sink,
                stove,
-               toilet,table, fridge, fire, tree, bush1, bush2,
+               toilet,table, fridge, fire, bush1, bush2, bush3,
                Wood(block_size * 10, HEIGHT - block_size * 3, block_size),
                Wood(block_size * 10, HEIGHT - block_size * 4, block_size),
                Wood(block_size * 10, HEIGHT - block_size * 5, block_size),
@@ -514,6 +515,43 @@ def main(window):
                Wood(block_size * 23.5, HEIGHT - block_size * 7, block_size/2),
                Wood(block_size * 24, HEIGHT - block_size * 7, block_size/2),
                Wood(block_size * 24.5, HEIGHT - block_size * 7, block_size/2),
+               Tree(-200, HEIGHT - 594, 500),
+                Tree2(-900, HEIGHT - 540, 500),
+                Car( -1600, HEIGHT - 600, 500),
+                Tree3( -2400, HEIGHT - 515, 500),
+
+                Wood(-(block_size * 24), HEIGHT - block_size * 5, block_size),
+                Wood(-(block_size * 25), HEIGHT - block_size * 5, block_size),
+                Wood(-(block_size * 23), HEIGHT - block_size * 5, block_size),
+                Wood(-(block_size * 26), HEIGHT - block_size * 5, block_size),
+                Wood(-(block_size * 27), HEIGHT - block_size * 5, block_size),
+                Wood(-(block_size * 22), HEIGHT - block_size * 5, block_size),
+                Wood(-(block_size * 22), HEIGHT - block_size * 8, block_size),
+                Wood(-(block_size * 22), HEIGHT - block_size * 9, block_size),
+                Wood(-(block_size * 22), HEIGHT - block_size * 10, block_size),
+                Wood(-(block_size * 28), HEIGHT - block_size * 5, block_size),
+                Wood(-(block_size * 28), HEIGHT - block_size * 6, block_size),
+                Wood(-(block_size * 28), HEIGHT - block_size * 7, block_size),
+                Wood(-(block_size * 28), HEIGHT - block_size * 8, block_size),
+                Wood(-(block_size * 28), HEIGHT - block_size * 9, block_size),
+                Wood(-(block_size * 28), HEIGHT - block_size * 10, block_size),
+                Wood(-(block_size * 27), HEIGHT - block_size * 10, block_size),
+                Wood(-(block_size * 26), HEIGHT - block_size * 10, block_size),
+                Wood(-(block_size * 24), HEIGHT - block_size * 5, block_size),
+                Wood(-(block_size * 23), HEIGHT - block_size * 5, block_size),
+                
+                Wood(-(block_size * 22.5), HEIGHT - block_size * 5, block_size/2),
+                Wood(-(block_size * 23), HEIGHT - block_size * 5, block_size/2),
+                Wood(-(block_size * 23.5), HEIGHT - block_size * 5, block_size/2),
+                Wood(-(block_size * 24), HEIGHT - block_size * 5, block_size/2),
+                Wood(-(block_size * 24.5), HEIGHT - block_size * 5, block_size/2),
+                Wood(-(block_size * 25), HEIGHT - block_size * 5, block_size/2),
+                Wood(-(block_size * 25.5), HEIGHT - block_size * 5, block_size/2),
+                Wood(-(block_size * 26), HEIGHT - block_size * 5, block_size/2),
+                Wood(-(block_size * 26.5), HEIGHT - block_size * 5, block_size/2),
+                Wood(-(block_size * 27), HEIGHT - block_size * 5, block_size/2),
+                Wood(-(block_size * 27.5), HEIGHT - block_size * 5, block_size/2),
+
 
 
                ]
