@@ -63,7 +63,10 @@ def level_1():
 
     texto_1 = "Os tempos mudaram. Sofia Damai mora na Mooca e, com as mudanças climáticas, seres ancestrais despertaram. O Ciclone Katrina invadiu Brasil e está criando enchentes em São Paulo. A Única esperança de Sofia é fugir da correnteza de água, pulando por cima de carros e outros objetos para não ser pega na inundação. Seu objetivo é alcançar o barco para que sobreviva à São Paulo submerso"
     text(texto_1)
-    
+    personagem = "assets/MainCharacters/NinjaFrog/foto-inicial-ninja-frog.png"
+    imgem_personagem = pygame.image.load(personagem).convert_alpha()
+    imgem_personagem = pygame.transform.scale(
+        imgem_personagem, (300, 300))
     while True:
         level_mouse_pos = pygame.mouse.get_pos()
 
@@ -75,6 +78,7 @@ def level_1():
         
         window.blit(level_selector_bg, (0, 0))
         window.blit(lore_screen, (100,20))
+        window.blit(imgem_personagem, (150, 90))
 
         title_text = get_font(50).render("ENCHENTE", True, (130, 200, 150))
         title_rect = title_text.get_rect(center=(container_width-200, container_height-580))
@@ -109,7 +113,10 @@ def level_2():
 
     texto_2 = "Os tempos mudaram. Roberto, nascido na Noruega em 2000, agora com 30 anos, enfrenta mais uma anomalia do Aquecimento Global. O Verão de Oslo está intenso e Roberto começa a não suportar mais o calor. Seu objetivo é sobreviver à onda de calor até que acabe o dia. Você precisa agir e fazer atividades que te refresquem para que não faleça de insolaçaõ"
     text(texto_2)
-
+    personagem = "assets/MainCharacters/MaskDude/foto-inicial-mask-dude.png"
+    imgem_personagem = pygame.image.load(personagem).convert_alpha()
+    imgem_personagem = pygame.transform.scale(
+        imgem_personagem, (300, 300))
     while True:
         level_mouse_pos = pygame.mouse.get_pos()
 
@@ -122,6 +129,7 @@ def level_2():
         
         window.blit(level_selector_bg, (0, 0))
         window.blit(lore_screen, (100,20))
+        window.blit(imgem_personagem, (150, 90))
 
         title_text = get_font(100).render(
             "ONDA DE CALOR", True, (130, 200, 150))
@@ -157,6 +165,10 @@ def level_3():
 
     texto_3 = "Os tempos mudaram. Jalin Rabei está em uma expedição na Antártida em busca de recursos novos que descongelaram com o aquecimento global. Mas, um passo em falso, despertaram O Avalanche, devido ao derretimento das montanhas de gelo. Seu objetivo é encontrar maneiras de sobreviver às ondas inacabáveis de gelo escorrendo pela montanha e alcançar o ponto de fuga."
     text(texto_3)
+    personagem = "assets/MainCharacters/VirtualGuy/foto-inicial-virtual-guy.png"
+    imgem_personagem= pygame.image.load(personagem).convert_alpha()
+    imgem_personagem = pygame.transform.scale(
+        imgem_personagem, (300, 300))
 
     while True:
         level_mouse_pos = pygame.mouse.get_pos()
@@ -169,6 +181,7 @@ def level_3():
         
         window.blit(level_selector_bg, (0, 0))
         window.blit(lore_screen, (100,20))
+        window.blit(imgem_personagem, (150, 90))
 
         title_text = get_font(100).render("Avalanche", True, (130, 200, 150))
         title_rect = title_text.get_rect(center=(container_width-200, container_height-580))
