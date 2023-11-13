@@ -48,7 +48,7 @@ def load_sprite_sheets(dir1, dir2, width, height, direction=False):
 
 
 def get_block(size):
-    path = join("assets", "Terrain", "Terrain3.png")
+    path = join("assets", "Terrain", "TerrainCidade.png")
     image = pygame.image.load(path).convert_alpha()
     surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
     rect = pygame.Rect(96, 128, size, size)
@@ -64,7 +64,7 @@ def get_chopper_size(size):
     return pygame.transform.scale(surface,(420,420))
 
 def get_block_2(size):
-    path = join("assets", "Terrain", "Terrain.png")
+    path = join("assets", "Terrain", "TerrainCidade.png")
     image = pygame.image.load(path).convert_alpha()
     surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
     rect = pygame.Rect(144, 64, size, size)
@@ -307,7 +307,7 @@ class Saw(Object):
 
 
 def get_background(name):
-    image = pygame.image.load(join("assets", "city", name))
+    image = pygame.image.load(join("assets", "city", name)).convert()
     _, _, width, height = image.get_rect()
     tiles = []
 

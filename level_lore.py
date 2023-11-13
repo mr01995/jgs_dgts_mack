@@ -61,7 +61,7 @@ def get_text():
 def level_1():
     from main import level_select
 
-    texto_1 = "Os tempos mudaram. Sofia Damai mora na Mooca e, com as mudanças climáticas, seres ancestrais despertaram. O Ciclone Katrina invadiu Brasil e está criando enchentes em São Paulo. A Única esperança de Sofia é fugir da correnteza de água, pulando por cima de carros e outros objetos para não ser pega na inundação. Seu objetivo é alcançar o barco para que sobreviva à São Paulo submerso"
+    texto_1 = "Os tempos mudaram. Sofia Cinta Damai mora na Mooca e, com as mudanças climáticas, seres ancestrais despertaram. O Ciclone Katrina invadiu Brasil e está criando enchentes em São Paulo. A Única esperança de Sofia é fugir da correnteza de água, pulando por cima de carros e outros objetos para não ser pega na inundação. Seu objetivo é alcançar o barco para que sobreviva à São Paulo submerso"
     text(texto_1)
     personagem = "assets/MainCharacters/NinjaFrog/foto-inicial-ninja-frog.png"
     imgem_personagem = pygame.image.load(personagem).convert_alpha()
@@ -80,7 +80,7 @@ def level_1():
         window.blit(lore_screen, (100,20))
         window.blit(imgem_personagem, (150, 90))
 
-        title_text = get_font(50).render("ENCHENTE", True, (130, 200, 150))
+        title_text = get_font(100).render("ENCHENTE", True, (130, 200, 150))
         title_rect = title_text.get_rect(center=(container_width-200, container_height-580))
         window.blit(title_text, title_rect)
 
@@ -131,7 +131,7 @@ def level_2():
         window.blit(lore_screen, (100,20))
         window.blit(imgem_personagem, (150, 90))
 
-        title_text = get_font(100).render(
+        title_text = get_font(75).render(
             "ONDA DE CALOR", True, (130, 200, 150))
         title_rect = title_text.get_rect(center=(container_width-200, container_height-580))
         window.blit(title_text, title_rect)

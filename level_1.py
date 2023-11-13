@@ -11,8 +11,7 @@ pygame.display.set_caption("Flood Flow Enchente")
 
 WIDTH, HEIGHT = 1280, 720
 FPS = 60
-PLAYER_VEL = 5
-PAUSE = False
+PLAYER_VEL = 6
 
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 
@@ -147,7 +146,6 @@ class Player(pygame.sprite.Sprite):
             self.animation_count = 0
 
     def loop(self, fps):
-        if not PAUSE:
             self.y_vel += min(1, (self.fall_count / fps) * self.GRAVITY)
             self.move(self.x_vel, self.y_vel)
 
@@ -189,6 +187,9 @@ class Player(pygame.sprite.Sprite):
                         self.ANIMATION_DELAY) % len(sprites)
         self.sprite = sprites[sprite_index]
         self.animation_count += 1
+        if self.rect.y > 650:
+            from main import death
+            death()
         self.update()
 
     def update(self):
@@ -250,14 +251,13 @@ class Wave(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height):
         super().__init__()
         self.rect = pygame.Rect(x, y, width, height)
-        self.x_vel = 15
+        self.x_vel = 20
         self.y_vel = 0
         self.mask = None
         self.name = "wave"
         self.animation_count = 0
 
     def loop(self):
-        if not PAUSE:
             self.rect.x += self.x_vel
             self.update_sprite()
 
@@ -272,7 +272,7 @@ class Wave(pygame.sprite.Sprite):
         self.sprite = pygame.transform.rotate(self.sprite, 270)
         self.sprite = pygame.transform.scale(self.sprite, (1500, 540))
         self.animation_count += 1
-        if self.rect.x >= 4500:
+        if self.rect.x >= 7500:
             self.rect.x = -900
         self.update()
         
@@ -303,7 +303,6 @@ class Fire(Object):
         self.animation_name = "off"
 
     def loop(self):
-        if not PAUSE:
             sprites = self.fire[self.animation_name]
             sprite_index = (self.animation_count //
                             self.ANIMATION_DELAY) % len(sprites)
@@ -335,7 +334,6 @@ class Saw(Object):
         self.animation_name = "off"
 
     def loop(self):
-        if not PAUSE:
             sprites = self.saw[self.animation_name]
             sprite_index = (self.animation_count //
                             self.ANIMATION_DELAY) % len(sprites)
@@ -360,7 +358,6 @@ class Rain(pygame.sprite.Sprite):
         self.rect.y = random.randint(-HEIGHT, -5)
 
     def update(self):
-        if not PAUSE:
             if self.rect.bottom > HEIGHT:
                 self.speedx = 3
                 self.speedy = random.randint(5, 25)
@@ -384,6 +381,65 @@ class Poste(Object):
         self.name = "poste"
         self.image.blit(poste, (0, 0))
         self.mask = pygame.mask.from_surface(self.image)
+
+def get_spike_size(size):
+    path = join("assets", "Traps", "Spikes", "idle.png")
+    image = pygame.image.load(path).convert_alpha()
+    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
+    rect = pygame.Rect(0, 0, 720, size)
+    surface.blit(image, (0, 0), rect)
+    return pygame.transform.scale2x(surface)
+class Spike(Object):
+    def __init__(self, x, y, size):
+        super().__init__(x, y, size, size)
+        spike = get_spike_size(size)
+        self.name = "spike"
+        self.image.blit(spike, (0, 0))
+        self.mask = pygame.mask.from_surface(self.image)
+
+def get_spikeball_size(size):
+    path = join("assets", "Traps", "Spiked Ball", "Spiked Ball.png")
+    image = pygame.image.load(path).convert_alpha()
+    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
+    rect = pygame.Rect(0, 0, 720, size)
+    surface.blit(image, (0, 0), rect)
+    return pygame.transform.scale2x(surface)
+class Spikeball(Object):
+    def __init__(self, x, y, size):
+        super().__init__(x, y, size, size)
+        spikeball = get_spikeball_size(size)
+        self.name = "spikeball"
+        self.image.blit(spikeball, (0, 0))
+        self.mask = pygame.mask.from_surface(self.image)
+
+def get_spikeruin_size(size):
+    path = join("assets", "Traps", "Spike Head", "Idle.png")
+    image = pygame.image.load(path).convert_alpha()
+    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
+    rect = pygame.Rect(0, 0, 200, size)
+    surface.blit(image, (0, 0), rect)
+    return surface
+class Spikeruin(Object):
+    def __init__(self, x, y, size):
+        super().__init__(x, y, size, size)
+        spikeruin = get_spikeruin_size(size)
+        self.name = "spikeruin"
+        self.image.blit(spikeruin, (0, 0))
+        self.mask = pygame.mask.from_surface(self.image)
+
+def get_tree_size(size):
+    path = join("assets", "Traps", "middle_lane_tree1.png")
+    image = pygame.image.load(path).convert_alpha()
+    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
+    rect = pygame.Rect(0, 0, 720, size)
+    surface.blit(image, (0, 0), rect)
+    return pygame.transform.scale2x(surface)
+class Tree(Object):
+    def __init__(self, x, y, size):
+        super().__init__(x, y, size, size)
+        tree = get_tree_size(size)
+        self.name = "tree"
+        self.image.blit(tree, (0, 0))
 
 def get_background(name):
     image = pygame.image.load(join("assets", "city", name))
@@ -417,7 +473,7 @@ def draw(window, background, bg_image, player, objects, offset_x, offset_y, PAUS
     for i in range(player.life):
         pygame.draw.rect(window, life_color, (x, y, life_width, life_height))
         x += spacing
-    for i in range(player.life, 10):
+    for i in range(player.life, 5):
         pygame.draw.rect(window, lost_life_color,
                          (x, y, life_width, life_height))
         x += spacing
@@ -432,6 +488,8 @@ def handle_vertical_collision(player, objects, dy):
     collided_objects = []
     for obj in objects:
         if pygame.sprite.collide_mask(player, obj):
+            if obj.name == "tree":
+                continue
             if dy > 0:
                 player.rect.bottom = obj.rect.top
                 player.landed()
@@ -479,7 +537,11 @@ def handle_move(player, objects):
     to_check = [collide_left, collide_right, *vertical_collide]
 
     for obj in to_check:
-        if obj and obj.name == "fire":
+        if obj and obj.name == "spikeball":
+            player.make_hit()
+            if player.life <= 0:
+                death()
+        if obj and obj.name == "spike":
             player.make_hit()
             if player.life <= 0:
                 death()
@@ -488,6 +550,10 @@ def handle_move(player, objects):
             if player.life <= 0:
                 death()
         if obj and obj.name == "wave":
+            player.make_hit()
+            if player.life <= 0:
+                death()
+        if obj and obj.name == "spikeruin":
             player.make_hit()
             if player.life <= 0:
                 death()
@@ -502,6 +568,7 @@ rain_group = pygame.sprite.Group()
 def main(window):
     clock = pygame.time.Clock()
     background, bg_image = get_background("bg_nivel_1.png")
+    PAUSE = False
     block_size = 96
     saw_size = 96
     block_size_2 = 32
@@ -509,9 +576,9 @@ def main(window):
     car_1_size = 84
     ship_size = 170
 
-    player = Player(100, 100, 50, 50)
+    player = Player(500, 100, 50, 50)
 
-    ship = Ship(5100, HEIGHT - ship_size, 720)
+    ship = Ship(WIDTH * 6, HEIGHT - ship_size, 720)
 
     wave_1 = Wave(-1000, HEIGHT - wave_size * 2, 1000, 500)
     for i in range(150):
@@ -520,68 +587,62 @@ def main(window):
 
     # carros
     carro_1 = Car(3800, HEIGHT - car_1_size * 2 - 64, 720)
-    carro_2 = Car(4180, HEIGHT - car_1_size * 2 - 64, 720)
+    carro_2 = Car(4200, HEIGHT - car_1_size * 2 - 64, 720)
+    carro_3 = Car(380, HEIGHT - 500, 720)
 
+    poste = Poste(950, HEIGHT - 480, 720)
+
+    spike_1 = Spike(1250, HEIGHT - 125,720)
     # fire
-    fire = Fire(700, HEIGHT - block_size - 64, 16, 32)
-    fire.on()
-    fire_2 = Fire(2140, HEIGHT - block_size - 64, 16, 32)
-    fire_2.on()
-    fire_3 = Fire(2330, HEIGHT - block_size - 64, 16, 32)
-    fire_3.on()
-    fire_4 = Fire(2530, HEIGHT - block_size - 64, 16, 32)
-    fire_4.on()
-    fire_5 = Fire(2720, HEIGHT - block_size - 64, 16, 32)
-    fire_5.on()
-    fire_6 = Fire(3200, HEIGHT - block_size - 448, 16, 32)
-    fire_6.on()
-    fire_7 = Fire(3650, HEIGHT - block_size - 64, 16, 32)
-    fire_7.on()
-    fire_8 = Fire(3686, HEIGHT - block_size - 64, 16, 32)
-    fire_8.on()
-    fire_9 = Fire(3722, HEIGHT - block_size - 64, 16, 32)
-    fire_9.on()
-    fire_10 = Fire(3758, HEIGHT - block_size - 64, 16, 32)
-    fire_10.on()
+    fire = Spikeball(700, HEIGHT - block_size - 64,  320)
+    fire_2 = Spikeball(2140, HEIGHT - block_size - 64,  320)
+    fire_3 = Spikeball(2330, HEIGHT - block_size - 64,  320)
+    fire_4 = Spikeball(2530, HEIGHT - block_size - 64, 320)
+    fire_5 = Spikeball(2720, HEIGHT - block_size - 64,320)
+    fire_6 = Spike(3200, HEIGHT - block_size - 415, 320)
+    fire_7 = Spikeball(3650, HEIGHT - block_size - 154, 320)
+    fire_8 = Spikeball(3686, HEIGHT - block_size - 154, 320)
+    fire_9 = Spikeball(3722, HEIGHT - block_size - 64,  320)
+    fire_10 = Spikeball(3758, HEIGHT - block_size - 64, 320)
+
 
     # saw
     saw = Saw(4094, HEIGHT - saw_size - 74, 38, 38)
     saw.on()
-    saw_1 = Saw(4094, HEIGHT - saw_size * 2 - 74, 38, 38)
+    saw_1 = Saw(4128, HEIGHT - saw_size * 2 - 74, 38, 38)
     saw_1.on()
-    saw_2 = Saw(4094, HEIGHT - saw_size - 74, 38, 38)
+    saw_2 = Saw(5900, HEIGHT - saw_size * 3 - 74, 38, 38)
     saw_2.on()
     saw_3 = Saw(4094, HEIGHT - saw_size - 74, 38, 38)
     saw_3.on()
+    saw_4 = Saw(5250, HEIGHT - block_size*3, 38, 38)
+    saw_4.on()
     
-    poste = Poste(950, HEIGHT - 500, 720)
 
-    # esse for de cima vai colocar mais blocos no chão
+    # esse for de baixo vai colocar mais blocos no chão
     floor_1 = [Block(i * block_size, HEIGHT - block_size, block_size)
-               for i in range(-WIDTH // block_size, (WIDTH * 4) // block_size)]
+               for i in range(-WIDTH // block_size, (WIDTH * 6) // block_size)]
     floor_2 = [Block_2(n * block_size_2, HEIGHT, block_size_2)
-               for n in range(-WIDTH // block_size_2, (WIDTH * 4) // block_size_2)]
+               for n in range(-WIDTH // block_size_2, (WIDTH * 6) // block_size_2)]
     floor_3 = [Block_2(n * block_size_2, HEIGHT + block_size_2, block_size_2)
-               for n in range(-WIDTH // block_size_2, (WIDTH * 4) // block_size_2)]
+               for n in range(-WIDTH // block_size_2, (WIDTH * 6) // block_size_2)]
     floor_4 = [Block_2(n * block_size_2, HEIGHT + block_size_2 + block_size_2, block_size_2)
-               for n in range(-WIDTH // block_size_2, (WIDTH * 4) // block_size_2)]
+               for n in range(-WIDTH // block_size_2, (WIDTH * 6) // block_size_2)]
 
     # um desses aqui coloca blocos na tela
     objects = [*floor_1, *floor_2, *floor_3, *floor_4,
                #    distancia X altura
-               Block(0, HEIGHT - block_size * 2, block_size),
+               Car(-100, HEIGHT - block_size * 2.3, 720),
                Block(block_size * 3, HEIGHT - block_size * 3, block_size), fire,
                Block(block_size * 3, HEIGHT - block_size * 4, block_size), poste,
-               Block(block_size * 4, HEIGHT - block_size * 4, block_size),
-               Block(block_size * 5, HEIGHT - block_size * 4, block_size),
+               Block(block_size * 4, HEIGHT - block_size * 4, block_size), carro_3,
+               Block(block_size * 5, HEIGHT - block_size * 4, block_size), spike_1,
                Block(block_size * 6, HEIGHT - block_size * 4, block_size),
                Block(block_size * 6, HEIGHT - block_size * 2, block_size),
                Block(block_size * 8, HEIGHT - block_size * 2, block_size),
                Block(block_size * 11, HEIGHT - block_size * 4, block_size),
                Block(block_size * 11, HEIGHT - block_size * 3, block_size),
-               Block(block_size * 14, HEIGHT - block_size * 1, block_size),
-               Block(block_size * 15, HEIGHT - block_size * 2, block_size),
-               Block(block_size * 16, HEIGHT - block_size * 3, block_size),
+                Car(1450, HEIGHT - block_size * 2.3, 720),
                Block(block_size * 17, HEIGHT - block_size * 4, block_size),
                Block(block_size * 20, HEIGHT - block_size * 5, block_size),
 
@@ -601,6 +662,7 @@ def main(window):
                Block(block_size * 37, HEIGHT - block_size * 5, block_size),
                Block(block_size * 37, HEIGHT - block_size * 7, block_size),
                Block(block_size * 37, HEIGHT - block_size * 8, block_size),
+               Block(block_size * 38, HEIGHT - block_size * 2, block_size),
 
                Block(block_size * 36, HEIGHT - block_size * 2, block_size),
                Block(block_size * 34, HEIGHT - block_size * 3, block_size),
@@ -618,11 +680,42 @@ def main(window):
                 Block(block_size * 49, HEIGHT - block_size * 3, block_size),
                 Block(block_size * 50, HEIGHT - block_size * 4, block_size),
                 Block(block_size * 49, HEIGHT - block_size * 5, block_size),
+                Poste(5100, HEIGHT - 480, 720),
+                saw_4,
+                Car(5400, HEIGHT - block_size * 2.3, 720),
+                Tree(5800, HEIGHT - block_size * 3.6, 720),
+                Block(block_size * 60, HEIGHT - block_size * 3, block_size),
+                saw_2,
+                Block(block_size * 62, HEIGHT - block_size * 5, block_size),
+                saw_3,
+                Block(block_size * 65, HEIGHT - block_size * 6, block_size),
+                Poste(6600, HEIGHT - 480, 720),
+
+                Block(block_size * 73, HEIGHT - block_size * 5, block_size),
+                Block(block_size * 74, HEIGHT - block_size * 5, block_size),
+                Block(block_size * 74, HEIGHT - block_size * 6, block_size),
+                Block(block_size * 74, HEIGHT - block_size * 7, block_size),
+                Block(block_size * 74, HEIGHT - block_size * 8, block_size),
+                Block(block_size * 72, HEIGHT - block_size * 7, block_size),
+                Block(block_size * 71, HEIGHT - block_size * 7, block_size),
+                Block(block_size * 71, HEIGHT - block_size * 8, block_size),
+                Block(block_size * 71, HEIGHT - block_size * 9, block_size),
+                Block(block_size * 69, HEIGHT - block_size * 10, block_size),
+                Spikeruin(6800, HEIGHT - block_size * 11, 720),
+                Block(block_size * 72, HEIGHT - block_size * 11, block_size),
+                Spikeruin(7120, HEIGHT - block_size * 12, 720),
+                Block(block_size * 75, HEIGHT - block_size * 12, block_size),
+                Spike(7000, HEIGHT - 125, 200),
+                Spike(7150, HEIGHT - 125, 200),
+                Spike(7300, HEIGHT - 125, 200),
+                Spike(7400, HEIGHT - 125, 200),
+                Spike(7500, HEIGHT - 125, 200),
+                Spike(6800, HEIGHT - 125, 200),
                ]
 
     # objects.extend([wave_1])
 
-    # change where the screen starts
+    # muda onde a tela começa
     offset_x = player.rect.x - 400
     offset_y = 0
     scroll_area_width = 200
@@ -630,7 +723,7 @@ def main(window):
 
     run = True
     while run:
-        global PAUSE
+        
         clock.tick(FPS)
 
         for event in pygame.event.get():
@@ -639,36 +732,25 @@ def main(window):
                 break
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and player.jump_count < 2 and not PAUSE:
+                if event.key == pygame.K_SPACE and player.jump_count < 2 :
                     player.jump()
-                if event.key == pygame.K_UP and player.jump_count < 2 and not PAUSE:
+                if event.key == pygame.K_UP and player.jump_count < 2:
                     player.jump()
-                if event.key == pygame.K_w and player.jump_count < 2 and not PAUSE:
+                if event.key == pygame.K_w and player.jump_count < 2 :
                     player.jump()
                 if event.key == pygame.K_ESCAPE:
-                    if PAUSE:
-                        PAUSE = False
-                    else: 
-                        PAUSE = True
-
-        player.loop(FPS)
-        fire.loop()
-        fire_2.loop()
-        fire_3.loop()
-        fire_4.loop()
-        fire_5.loop()
-        fire_6.loop()
-        fire_7.loop()
-        fire_8.loop()
-        fire_9.loop()
-        fire_10.loop()
-        wave_1.loop()
-        saw.loop()
-        saw_1.loop()
-        handle_move(player, objects)
+                    PAUSE = not PAUSE
+        
+        if PAUSE == False:
+            player.loop(FPS)
+            wave_1.loop()
+            saw.loop()
+            saw_1.loop()
+            saw_2.loop()
+            saw_3.loop()
+            saw_4.loop()
+            handle_move(player, objects)
         draw(window, background, bg_image, player, objects, offset_x, offset_y, PAUSE)
-
-
 
         if ((player.rect.bottom - offset_y >= HEIGHT - scroll_area_height -50) and player.y_vel > 0) or (
         (player.rect.top - offset_y <= (scroll_area_height + 100)) and player.y_vel < 0): 

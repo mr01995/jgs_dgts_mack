@@ -369,7 +369,8 @@ def handle_move(player, objects):
            player.calor -= 2
         if obj and obj.name == "fridge":
            player.calor -= 30
-        
+        if obj and obj.name == "tree":
+           player.calor -= 5
         
 
         
