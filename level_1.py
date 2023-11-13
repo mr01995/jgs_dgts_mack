@@ -250,7 +250,7 @@ class Wave(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height):
         super().__init__()
         self.rect = pygame.Rect(x, y, width, height)
-        self.x_vel = 4
+        self.x_vel = 10
         self.y_vel = 0
         self.mask = None
         self.name = "wave"
@@ -272,7 +272,10 @@ class Wave(pygame.sprite.Sprite):
         self.sprite = pygame.transform.rotate(self.sprite, 270)
         self.sprite = pygame.transform.scale(self.sprite, (1500, 540))
         self.animation_count += 1
+        if self.rect.x >= 4500:
+            self.rect.x = -900
         self.update()
+        
 
     def update(self):
         self.rect = self.sprite.get_rect(topleft=(self.rect.x, self.rect.y))
@@ -593,7 +596,11 @@ def main(window):
                Block(block_size * 11, HEIGHT - block_size * 4, block_size),
                Block(block_size * 11, HEIGHT - block_size * 4, block_size),ship,
                Block(block_size * 11, HEIGHT - \
-                     block_size * 4, block_size), wave_1
+                     block_size * 4, block_size), wave_1, 
+                Block(block_size * 50, HEIGHT - block_size * 2, block_size),
+                Block(block_size * 49, HEIGHT - block_size * 3, block_size),
+                Block(block_size * 50, HEIGHT - block_size * 4, block_size),
+                Block(block_size * 49, HEIGHT - block_size * 5, block_size),
                ]
 
     # objects.extend([wave_1])

@@ -14,8 +14,8 @@ pygame.display.set_caption("Heatwaves")
 
 WIDTH, HEIGHT = 1280, 720
 
-FPS = 180
-PLAYER_VEL = 10
+FPS = 120
+PLAYER_VEL = 7
 countdown = 0
 
 
@@ -61,12 +61,19 @@ def get_block(size):
     rect = pygame.Rect(96, 0, size, size)
     surface.blit(image, (0, 0), rect)
     return pygame.transform.scale2x(surface)
+def get_wood_block(size):
+    path = join("assets", "Terrain", "Terrain.png")
+    image = pygame.image.load(path).convert_alpha()
+    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
+    rect = pygame.Rect(96, 128, size, size)
+    surface.blit(image, (0, 0), rect)
+    return pygame.transform.scale2x(surface)
 
 
 class Player(pygame.sprite.Sprite):
     COLOR = (255, 0, 0)
     GRAVITY = 1
-    SPRITES = load_sprite_sheets("MainCharacters", "NinjaFrog", 32, 32, True)
+    SPRITES = load_sprite_sheets("MainCharacters", "MaskDude", 32, 32, True)
     ANIMATION_DELAY = 3
 
     def __init__(self, x, y, width, height):
@@ -88,7 +95,7 @@ class Player(pygame.sprite.Sprite):
         self.hit_timer = 0
         self.jump_sound = pygame.mixer.Sound('assets/Audio/jump.wav')
         self.jump_sound.set_volume(0.5)
-        #self.hit_sound = pygame.mixer.Sound('assets/Audio/hit.wav')
+        self.hit_sound = pygame.mixer.Sound('assets/Audio/hit.wav')
 
     def jump(self):
         self.y_vel = -self.GRAVITY * 8
@@ -141,7 +148,7 @@ class Player(pygame.sprite.Sprite):
     def take_hit(self):
         if not self.invincible:
             self.life -= 1
-            #self.hit_sound.play()
+            self.hit_sound.play()
             self.invincible = True
             self.hit_timer = pygame.time.get_ticks()
 
@@ -157,7 +164,9 @@ class Player(pygame.sprite.Sprite):
 
     def update_sprite(self):
         sprite_sheet = "idle"
-        if self.y_vel < 0:
+        if self.hit:
+            sprite_sheet = "hit"
+        elif self.y_vel < 0:
             if self.jump_count == 1:
                 sprite_sheet = "jump"
             elif self.jump_count == 2:
@@ -210,150 +219,10 @@ class Block(Object):
 class Wood(Object):
     def __init__(self, x, y, size):
         super().__init__(x, y, size, size)
-        block = get_block(size)
-        self.image.blit(block, (0, 0))
+        wood_block = get_wood_block(size)
+        self.image.blit(wood_block, (0, 0))
         self.mask = pygame.mask.from_surface(self.image)
 
-
-class Fire(Object):
-    ANIMATION_DELAY = 3
-
-    def __init__(self, x, y, width, height):
-        super().__init__(x, y, width, height, "fire")
-        self.fire = load_sprite_sheets("Traps", "Fire", width, height)
-        self.image = self.fire["off"][0]
-        self.mask = pygame.mask.from_surface(self.image)
-        self.animation_count = 0
-        self.animation_name = "off"
-
-    def on(self):
-        self.animation_name = "on"
-
-    def off(self):
-        self.animation_name = "off"
-
-    def loop(self):
-        sprites = self.fire[self.animation_name]
-        sprite_index = (self.animation_count //
-                        self.ANIMATION_DELAY) % len(sprites)
-        self.image = sprites[sprite_index]
-        self.animation_count += 1
-
-        self.rect = self.image.get_rect(topleft=(self.rect.x, self.rect.y))
-        self.mask = pygame.mask.from_surface(self.image)
-
-        if self.animation_count // self.ANIMATION_DELAY > len(sprites):
-            self.animation_count = 0
-
-
-def get_bathtub_size(size):
-    path = join("assets", "House", "bathtub.png")
-    image = pygame.image.load(path).convert_alpha()
-    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
-    rect = pygame.Rect(0, 0, 200, size)
-    surface.blit(image, (0, 0), rect)
-    return pygame.transform.scale2x(surface)
-class Bathtub(Object):
-    def __init__(self, x, y, size):
-        super().__init__(x, y, size, size)
-        bathtub = get_bathtub_size(size)
-        self.name = "bathtub"
-        self.image.blit(bathtub, (0, 0))
-        self.mask = pygame.mask.from_surface(self.image)
-
-
-def get_closet_size(size):
-    path = join("assets", "House", "closet.png")
-    image = pygame.image.load(path).convert_alpha()
-    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
-    rect = pygame.Rect(0, 0, 200, size)
-    surface.blit(image, (0, 0), rect)
-    return pygame.transform.scale2x(surface)
-class Closet(Object):
-    def __init__(self, x, y, size):
-        super().__init__(x, y, size, size)
-        closet = get_closet_size(size)
-        self.name = "closet"
-        self.image.blit(closet, (0, 0))
-        self.mask = pygame.mask.from_surface(self.image)
-
-
-def get_sink_size(size):
-    path = join("assets", "House", "sink.png")
-    image = pygame.image.load(path).convert_alpha()
-    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
-    rect = pygame.Rect(0, 0, 200, size)
-    surface.blit(image, (0, 0), rect)
-    return surface
-class Sink(Object):
-    def __init__(self, x, y, size):
-        super().__init__(x, y, size, size)
-        sink = get_sink_size(size)
-        self.name = "sink"
-        self.image.blit(sink, (0, 0))
-        
-def get_stove_size(size):
-    path = join("assets", "House", "stove.png")
-    image = pygame.image.load(path).convert_alpha()
-    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
-    rect = pygame.Rect(0, 0, 200, size)
-    surface.blit(image, (0, 0), rect)
-    return surface
-class Stove(Object):
-    def __init__(self, x, y, size):
-        super().__init__(x, y, size, size)
-        stove = get_stove_size(size)
-        self.name = "stove"
-        self.image.blit(stove, (0, 0))
-        self.mask = pygame.mask.from_surface(self.image)
-
-def get_toilet_size(size):
-    path = join("assets", "House", "toilet.png")
-    image = pygame.image.load(path).convert_alpha()
-    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
-    rect = pygame.Rect(0, 0, 200, size)
-    surface.blit(image, (0, 0), rect)
-    return pygame.transform.scale2x(surface)
-class Toilet(Object):
-    def __init__(self, x, y, size):
-        super().__init__(x, y, size, size)
-        toilet = get_toilet_size(size)
-        self.name = "toilet"
-        self.image.blit(toilet, (0, 0))
-        self.mask = pygame.mask.from_surface(self.image)
-
-def get_table_size(size):
-    path = join("assets", "House", "table.png")
-    image = pygame.image.load(path).convert_alpha()
-    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
-    rect = pygame.Rect(0, 0, 200, size)
-    surface.blit(image, (0, 0), rect)
-    return surface
-class Table(Object):
-    def __init__(self, x, y, size):
-        super().__init__(x, y, size, size)
-        table = get_table_size(size)
-        self.name = "table"
-        self.image.blit(table, (0, 0))
-
-def get_fridge_size(size):
-    path = join("assets", "House", "fridge.png")
-    image = pygame.image.load(path).convert_alpha()
-    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
-    rect = pygame.Rect(0, 0, 720, size)
-    surface.blit(image, (0, 0), rect)
-    return pygame.transform.scale(surface, (128, 128))
-class Fridge(Object):
-    def __init__(self, x, y, size):
-        super().__init__(x, y, size, size)
-        fridge = get_fridge_size(size)
-        self.name = "fridge"
-        self.image.blit(fridge, (0, 0))
-
-
-def get_background(name):
-    image = pygame.image.load(join("assets", "city", name))
-    return image
 
 
 def draw(window, player, objects, offset_x,  offset_y, countdown, pause):
@@ -363,27 +232,38 @@ def draw(window, player, objects, offset_x,  offset_y, countdown, pause):
         obj.draw(window, offset_x,  offset_y)
 
     player.draw(window, offset_x,  offset_y)
+    
 
-    x = 30
-    y = 30
-    spacing = 20
-    life_width = 60
-    life_height = 20
+
+    x_life = 30
+    y_life = 30
+    spacing_life = 20
     actual_life = (0, 255, 0)  # cor das vidas restantes
     max_life = (0, 0, 0)  # cor das vidas perdidas
-    for i in range(player.life):
-        pygame.draw.rect(window, actual_life, (x, y, life_width, life_height))
-        x += spacing
-    for i in range(player.life, 20): 
-        pygame.draw.rect(window, max_life, (x, y, life_width, life_height))
-        x += spacing
+
+    x_heat = 30
+    y_heat = 90
+    spacing_heat = 0.5
     
     for i in range(player.life):
-        pygame.draw.rect(window, actual_life, (x, y, life_width, life_height))
-        x += spacing
-    for i in range(player.life, 20): 
-        pygame.draw.rect(window, max_life, (x, y, life_width, life_height))
-        x += spacing
+        pygame.draw.rect(window, actual_life, (x_life, y_life, 60, 20))
+        x_life += spacing_life
+    for i in range(player.life, 20):
+        if x_life < 400:
+            pygame.draw.rect(window, max_life, (x_life, y_life, 60, 20))
+            x_life += spacing_life
+
+        #barra de calor atual
+    for i in range(player.calor):
+        pygame.draw.rect(window, (255, 228, 132), (x_heat, y_heat, 60, 20))
+        if x_heat >= 400:
+            x_heat = 400
+        else:
+            x_heat += spacing_heat
+        #barra maxima
+    for i in range(player.calor, 800): 
+        pygame.draw.rect(window, (0, 0 , 0), (x_heat, y_heat, 1, 20))
+        x_heat += spacing_heat
 
     if countdown < 175:
         window.blit(calor_imagem, (0,0))
@@ -409,6 +289,16 @@ def handle_vertical_collision(player, objects, dy):
             if obj.name == "table":
                 continue
             if obj.name == "fridge":
+                continue
+            if obj.name == "tree":
+                continue
+            if obj.name == "door":
+                continue
+            if obj.name == "bush1":
+                continue
+            if obj.name == "bush2":
+                continue
+            if obj.name == "bathtub":
                 continue
             if dy > 0:
                 player.rect.bottom = obj.rect.top
@@ -445,6 +335,7 @@ def collide(player, objects, dx):
 
 
 def handle_move(player, objects):
+    from main import death
 
     keys = pygame.key.get_pressed()
 
@@ -466,15 +357,24 @@ def handle_move(player, objects):
 
     
     for obj in to_check:
+        if obj and obj.name == "fire":
+            player.make_hit()
+            if player.life <= 0:
+                death()
         if obj and obj.name == "sink":
-           player.calor -= 20
+           player.calor -= 10
         if obj and obj.name == "bathtub":
            player.calor -= 50
         if obj and obj.name == "toilet":
            player.calor -= 2
+        if obj and obj.name == "fridge":
+           player.calor -= 30
+        
+        
+
         
 def main(window):
-
+    from objects import Bathtub, Closet, Sink, Stove, Toilet, Table, Fridge, Tree, Fire, Bush1, Door, Bush2
     from main import victory
 
     clock = pygame.time.Clock()
@@ -482,22 +382,24 @@ def main(window):
     block_size = 96 
     countdown = 180
     
-    player = Player(100, 100, 50, 50)
+    player = Player(250, 600, 50, 50)
 
-    bathtub_size = 62
-    bathtub = Bathtub(1100, HEIGHT - bathtub_size * 11.3 - 58, 200)
+    bathtub = Bathtub(1100, HEIGHT - 810    , 200)
     closet_size = 110
     closet = Closet(1300, HEIGHT - closet_size * 4.6 - 58, 200)
     sink_size = 80
     sink = Sink(2200, HEIGHT - sink_size * 9.3 - 58, 200)
     stove_size = 145
-    stove = Stove(2000, HEIGHT - stove_size, 200)
+    stove = Stove(2200, HEIGHT - stove_size, 200)
     toilet_size = 80
     toilet = Toilet(1400, HEIGHT - toilet_size * 9.3 - 58, 200)
     table_size = 80
     table = Table(1200, HEIGHT - table_size * 2.02 - 58, 200)
-    fridge_size = 180
-    fridge = Fridge(1900, HEIGHT - fridge_size, 200)
+    fridge = Fridge(2000, HEIGHT - 240, 500)
+    door = Door(960, HEIGHT - 200, 500)
+    tree = Tree(-200, HEIGHT - 594, 500)
+    bush1 = Bush1(350, HEIGHT - 155, 500)
+    bush2 = Bush2(600, HEIGHT - 205, 500)
     fire = Fire(1250, HEIGHT - block_size - 130, 16, 32)
     fire.on()
 
@@ -508,109 +410,109 @@ def main(window):
     # um desses aqui coloca blocos na tela
     objects = [*floor,
                #    distancia X altura
-               bathtub,
                closet,
+               bathtub,
                sink,
                stove,
-               toilet,table, fridge,
-               Block(block_size * 10, HEIGHT - block_size * 3, block_size),
-               Block(block_size * 10, HEIGHT - block_size * 4, block_size),
-               Block(block_size * 10, HEIGHT - block_size * 5, block_size),
-               Block(block_size * 10, HEIGHT - block_size * 6, block_size),
-               Block(block_size * 10, HEIGHT - block_size * 7, block_size),
-               Block(block_size * 10, HEIGHT - block_size * 8, block_size),
-               Block(block_size * 10, HEIGHT - block_size * 9, block_size),
-               Block(block_size * 10, HEIGHT - block_size * 10, block_size),
-               Block(block_size * 11, HEIGHT - block_size * 10, block_size),
-               Block(block_size * 11, HEIGHT - block_size * 11, block_size),
-               Block(block_size * 12, HEIGHT - block_size * 11, block_size),
-               Block(block_size * 12, HEIGHT - block_size * 12, block_size),
-               Block(block_size * 13, HEIGHT - block_size * 12, block_size),
-               Block(block_size * 25, HEIGHT - block_size * 3, block_size),
-               Block(block_size * 25, HEIGHT - block_size * 4, block_size),
-               Block(block_size * 25, HEIGHT - block_size * 5, block_size),
-               Block(block_size * 25, HEIGHT - block_size * 6, block_size),
-               Block(block_size * 25, HEIGHT - block_size * 2, block_size),
-               Block(block_size * 25, HEIGHT - block_size * 7, block_size),
-               Block(block_size * 25, HEIGHT - block_size * 8, block_size),
-               Block(block_size * 25, HEIGHT - block_size * 9, block_size),
-               Block(block_size * 25, HEIGHT - block_size * 10, block_size),
-               Block(block_size * 24, HEIGHT - block_size * 10, block_size),
-               Block(block_size * 24, HEIGHT - block_size * 11, block_size),
-               Block(block_size * 23, HEIGHT - block_size * 11, block_size),
-               Block(block_size * 23, HEIGHT - block_size * 12, block_size),
-               Block(block_size * 22, HEIGHT - block_size * 12, block_size),
-               Block(block_size * 21, HEIGHT - block_size * 12, block_size),
-               Block(block_size * 20, HEIGHT - block_size * 12, block_size),
-               Block(block_size * 19, HEIGHT - block_size * 12, block_size),
-               Block(block_size * 18, HEIGHT - block_size * 12, block_size),
-               Block(block_size * 17, HEIGHT - block_size * 12, block_size),
-               Block(block_size * 16, HEIGHT - block_size * 12, block_size),
-               Block(block_size * 15, HEIGHT - block_size * 12, block_size),
-               Block(block_size * 14, HEIGHT - block_size * 12, block_size),
-               Block(block_size * 11, HEIGHT - block_size * 4, block_size/2),
-               Block(block_size * 11.5, HEIGHT - block_size * 4, block_size/2),
-               Block(block_size * 12, HEIGHT - block_size * 4, block_size/2),
-               Block(block_size * 12.5, HEIGHT - block_size * 4, block_size/2),
-               Block(block_size * 13, HEIGHT - block_size * 4, block_size/2),
-               Block(block_size * 13.5, HEIGHT - block_size * 4, block_size/2),
-               Block(block_size * 14, HEIGHT - block_size * 4, block_size/2),
-               Block(block_size * 14.5, HEIGHT - block_size * 4, block_size/2),
-               Block(block_size * 15, HEIGHT - block_size * 4, block_size/2),
-               Block(block_size * 15.5, HEIGHT - block_size * 4, block_size/2),
-               Block(block_size * 16, HEIGHT - block_size * 4, block_size/2),
-               Block(block_size * 16.5, HEIGHT - block_size * 4, block_size/2),
-               Block(block_size * 17, HEIGHT - \
+               toilet,table, fridge, fire, tree, bush1, bush2,
+               Wood(block_size * 10, HEIGHT - block_size * 3, block_size),
+               Wood(block_size * 10, HEIGHT - block_size * 4, block_size),
+               Wood(block_size * 10, HEIGHT - block_size * 5, block_size),
+               Wood(block_size * 10, HEIGHT - block_size * 6, block_size),
+               Wood(block_size * 10, HEIGHT - block_size * 7, block_size),
+               Wood(block_size * 10, HEIGHT - block_size * 8, block_size),
+               Wood(block_size * 10, HEIGHT - block_size * 9, block_size),
+               Wood(block_size * 10, HEIGHT - block_size * 10, block_size),
+               Wood(block_size * 11, HEIGHT - block_size * 10, block_size),
+               Wood(block_size * 11, HEIGHT - block_size * 11, block_size),
+               Wood(block_size * 12, HEIGHT - block_size * 11, block_size),
+               Wood(block_size * 12, HEIGHT - block_size * 12, block_size),
+               Wood(block_size * 13, HEIGHT - block_size * 12, block_size),
+               Wood(block_size * 25, HEIGHT - block_size * 3, block_size),
+               Wood(block_size * 25, HEIGHT - block_size * 4, block_size),
+               Wood(block_size * 25, HEIGHT - block_size * 5, block_size),
+               Wood(block_size * 25, HEIGHT - block_size * 6, block_size),
+               Wood(block_size * 25, HEIGHT - block_size * 2, block_size),
+               Wood(block_size * 25, HEIGHT - block_size * 7, block_size),
+               Wood(block_size * 25, HEIGHT - block_size * 8, block_size),
+               Wood(block_size * 25, HEIGHT - block_size * 9, block_size),
+               Wood(block_size * 25, HEIGHT - block_size * 10, block_size),
+               Wood(block_size * 24, HEIGHT - block_size * 10, block_size),
+               Wood(block_size * 24, HEIGHT - block_size * 11, block_size),
+               Wood(block_size * 23, HEIGHT - block_size * 11, block_size),
+               Wood(block_size * 23, HEIGHT - block_size * 12, block_size),
+               Wood(block_size * 22, HEIGHT - block_size * 12, block_size),
+               Wood(block_size * 21, HEIGHT - block_size * 12, block_size),
+               Wood(block_size * 20, HEIGHT - block_size * 12, block_size),
+               Wood(block_size * 19, HEIGHT - block_size * 12, block_size),
+               Wood(block_size * 18, HEIGHT - block_size * 12, block_size),
+               Wood(block_size * 17, HEIGHT - block_size * 12, block_size),
+               Wood(block_size * 16, HEIGHT - block_size * 12, block_size),
+               Wood(block_size * 15, HEIGHT - block_size * 12, block_size),
+               Wood(block_size * 14, HEIGHT - block_size * 12, block_size),
+               Wood(block_size * 11, HEIGHT - block_size * 4, block_size/2),
+               Wood(block_size * 11.5, HEIGHT - block_size * 4, block_size/2),
+               Wood(block_size * 12, HEIGHT - block_size * 4, block_size/2),
+               Wood(block_size * 12.5, HEIGHT - block_size * 4, block_size/2),
+               Wood(block_size * 13, HEIGHT - block_size * 4, block_size/2),
+               Wood(block_size * 13.5, HEIGHT - block_size * 4, block_size/2),
+               Wood(block_size * 14, HEIGHT - block_size * 4, block_size/2),
+               Wood(block_size * 14.5, HEIGHT - block_size * 4, block_size/2),
+               Wood(block_size * 15, HEIGHT - block_size * 4, block_size/2),
+               Wood(block_size * 15.5, HEIGHT - block_size * 4, block_size/2),
+               Wood(block_size * 16, HEIGHT - block_size * 4, block_size/2),
+               Wood(block_size * 16.5, HEIGHT - block_size * 4, block_size/2),
+               Wood(block_size * 17, HEIGHT - \
                      block_size * 4, block_size/2), 
-               Block(block_size * 17.5, HEIGHT - block_size * 4, block_size/2),
-               Block(block_size * 18, HEIGHT - block_size * 4, block_size/2),
-               Block(block_size * 18.5, HEIGHT - \
+               Wood(block_size * 17.5, HEIGHT - block_size * 4, block_size/2),
+               Wood(block_size * 18, HEIGHT - block_size * 4, block_size/2),
+               Wood(block_size * 18.5, HEIGHT - \
                      block_size * 2.5, block_size/2),
-               Block(block_size * 19, HEIGHT - block_size * 3, block_size/2),
-               Block(block_size * 19.5, HEIGHT - \
+               Wood(block_size * 19, HEIGHT - block_size * 3, block_size/2),
+               Wood(block_size * 19.5, HEIGHT - \
                      block_size * 3.5, block_size/2),
-               Block(block_size * 20, HEIGHT - block_size * 4, block_size/2),
-               Block(block_size * 20.5, HEIGHT - block_size * 4, block_size/2),
-               Block(block_size * 21, HEIGHT - block_size * 4, block_size/2),
-               Block(block_size * 21.5, HEIGHT - block_size * 4, block_size/2),
-               Block(block_size * 22, HEIGHT - block_size * 4, block_size/2),
-               Block(block_size * 22.5, HEIGHT - block_size * 4, block_size/2),
-               Block(block_size * 23, HEIGHT - block_size * 4, block_size/2),
-               Block(block_size * 23.5, HEIGHT - block_size * 4, block_size/2),
-               Block(block_size * 24, HEIGHT - block_size * 4, block_size/2),
-               Block(block_size * 24.5, HEIGHT - block_size * 4, block_size/2),
+               Wood(block_size * 20, HEIGHT - block_size * 4, block_size/2),
+               Wood(block_size * 20.5, HEIGHT - block_size * 4, block_size/2),
+               Wood(block_size * 21, HEIGHT - block_size * 4, block_size/2),
+               Wood(block_size * 21.5, HEIGHT - block_size * 4, block_size/2),
+               Wood(block_size * 22, HEIGHT - block_size * 4, block_size/2),
+               Wood(block_size * 22.5, HEIGHT - block_size * 4, block_size/2),
+               Wood(block_size * 23, HEIGHT - block_size * 4, block_size/2),
+               Wood(block_size * 23.5, HEIGHT - block_size * 4, block_size/2),
+               Wood(block_size * 24, HEIGHT - block_size * 4, block_size/2),
+               Wood(block_size * 24.5, HEIGHT - block_size * 4, block_size/2),
 
-               Block(block_size * 11, HEIGHT - block_size * 7, block_size/2),
-               Block(block_size * 11.5, HEIGHT - block_size * 7, block_size/2),
-               Block(block_size * 12, HEIGHT - block_size * 7, block_size/2),
-               Block(block_size * 12.5, HEIGHT - block_size * 7, block_size/2),
-               Block(block_size * 13, HEIGHT - block_size * 7, block_size/2),
-               Block(block_size * 13.5, HEIGHT - block_size * 7, block_size/2),
-               Block(block_size * 14, HEIGHT - block_size * 7, block_size/2),
-               Block(block_size * 14.5, HEIGHT - block_size * 7, block_size/2),
-               Block(block_size * 15, HEIGHT - block_size * 7, block_size/2),
-               Block(block_size * 15.5, HEIGHT - block_size * 7, block_size/2),
-               Block(block_size * 16, HEIGHT - block_size * 7, block_size/2),
-               Block(block_size * 16.5, HEIGHT - block_size * 7, block_size/2),
-               Block(block_size * 17, HEIGHT - \
+               Wood(block_size * 11, HEIGHT - block_size * 7, block_size/2),
+               Wood(block_size * 11.5, HEIGHT - block_size * 7, block_size/2),
+               Wood(block_size * 12, HEIGHT - block_size * 7, block_size/2),
+               Wood(block_size * 12.5, HEIGHT - block_size * 7, block_size/2),
+               Wood(block_size * 13, HEIGHT - block_size * 7, block_size/2),
+               Wood(block_size * 13.5, HEIGHT - block_size * 7, block_size/2),
+               Wood(block_size * 14, HEIGHT - block_size * 7, block_size/2),
+               Wood(block_size * 14.5, HEIGHT - block_size * 7, block_size/2),
+               Wood(block_size * 15, HEIGHT - block_size * 7, block_size/2),
+               Wood(block_size * 15.5, HEIGHT - block_size * 7, block_size/2),
+               Wood(block_size * 16, HEIGHT - block_size * 7, block_size/2),
+               Wood(block_size * 16.5, HEIGHT - block_size * 7, block_size/2),
+               Wood(block_size * 17, HEIGHT - \
                      block_size * 7, block_size/2),
-               Block(block_size * 17.5, HEIGHT - block_size * 7, block_size/2),
-               Block(block_size * 18, HEIGHT - block_size * 7, block_size/2),
-               Block(block_size * 18.5, HEIGHT - \
+               Wood(block_size * 17.5, HEIGHT - block_size * 7, block_size/2),
+               Wood(block_size * 18, HEIGHT - block_size * 7, block_size/2),
+               Wood(block_size * 18.5, HEIGHT - \
                      block_size * 6.5, block_size/2),
-               Block(block_size * 19, HEIGHT - block_size * 6, block_size/2),
-               Block(block_size * 19.5, HEIGHT - \
+               Wood(block_size * 19, HEIGHT - block_size * 6, block_size/2),
+               Wood(block_size * 19.5, HEIGHT - \
                      block_size * 5.5, block_size/2),
-               Block(block_size * 20, HEIGHT - block_size * 7, block_size/2),
-               Block(block_size * 20.5, HEIGHT - block_size * 7, block_size/2),
-               Block(block_size * 21, HEIGHT - block_size * 7, block_size/2),
-               Block(block_size * 21.5, HEIGHT - block_size * 7, block_size/2),
-               Block(block_size * 22, HEIGHT - block_size * 7, block_size/2),
-               Block(block_size * 22.5, HEIGHT - block_size * 7, block_size/2),
-               Block(block_size * 23, HEIGHT - block_size * 7, block_size/2),
-               Block(block_size * 23.5, HEIGHT - block_size * 7, block_size/2),
-               Block(block_size * 24, HEIGHT - block_size * 7, block_size/2),
-               Block(block_size * 24.5, HEIGHT - block_size * 7, block_size/2),
+               Wood(block_size * 20, HEIGHT - block_size * 7, block_size/2),
+               Wood(block_size * 20.5, HEIGHT - block_size * 7, block_size/2),
+               Wood(block_size * 21, HEIGHT - block_size * 7, block_size/2),
+               Wood(block_size * 21.5, HEIGHT - block_size * 7, block_size/2),
+               Wood(block_size * 22, HEIGHT - block_size * 7, block_size/2),
+               Wood(block_size * 22.5, HEIGHT - block_size * 7, block_size/2),
+               Wood(block_size * 23, HEIGHT - block_size * 7, block_size/2),
+               Wood(block_size * 23.5, HEIGHT - block_size * 7, block_size/2),
+               Wood(block_size * 24, HEIGHT - block_size * 7, block_size/2),
+               Wood(block_size * 24.5, HEIGHT - block_size * 7, block_size/2),
 
 
                ]
@@ -642,11 +544,11 @@ def main(window):
                         
         if pause == False:
             player.loop(FPS)
+            fire.loop()
             if player.calor < 0:
                 player.calor = 0
             else:
                 player.calor += 1
-                print(player.calor)
             heat_damage(player, countdown)
             handle_move(player, objects)
 

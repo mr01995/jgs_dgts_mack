@@ -54,10 +54,10 @@ def load_sprite_sheets(dir1, dir2, width, height, direction=False):
 
 
 def get_block(size):
-    path = join("assets", "Terrain", "Terrain.png")
+    path = join("assets", "Terrain", "Terrain3.png")
     image = pygame.image.load(path).convert_alpha()
     surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
-    rect = pygame.Rect(96, 64, size, size)
+    rect = pygame.Rect(96, 128, size, size)
     surface.blit(image, (0, 0), rect)
     return pygame.transform.scale2x(surface)
 
