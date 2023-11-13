@@ -503,7 +503,7 @@ def main(window):
     wave_size = 200
     chopper_size = 330
 
-    player = Player(6850, 100, 50, 50)
+    player = Player(100, 100, 50, 50)
     avalanche = Avalanche(-1000, HEIGHT - wave_size * 2, 1000, 500)
     chopper = Chopper(6990, HEIGHT - (chopper_size * 3) - 160, 720)
 

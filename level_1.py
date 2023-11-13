@@ -250,7 +250,7 @@ class Wave(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height):
         super().__init__()
         self.rect = pygame.Rect(x, y, width, height)
-        self.x_vel = 10
+        self.x_vel = 15
         self.y_vel = 0
         self.mask = None
         self.name = "wave"
