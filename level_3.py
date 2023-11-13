@@ -1,16 +1,10 @@
-import os
 import random
-import math
 import pygame
-import sys
 from os import listdir
 from os.path import isfile, join
 from button import *
 from pause import draw_pause_menu
 
-import pygame
-from os import listdir
-from os.path import isfile, join
 
 pygame.init()
 

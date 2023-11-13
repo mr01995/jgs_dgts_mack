@@ -4,8 +4,6 @@ from button import *
 from level_lore import *
 from sys import argv
 import pygame
-from os import listdir
-from os.path import isfile, join
 
 pygame.init()
 

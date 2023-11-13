@@ -11,7 +11,7 @@ pygame.display.set_caption("Flood Flow Enchente")
 
 WIDTH, HEIGHT = 1280, 720
 FPS = 60
-PLAYER_VEL = 10
+PLAYER_VEL = 5
 PAUSE = False
 
 window = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -97,7 +97,7 @@ class Player(pygame.sprite.Sprite):
         self.jump_count = 0
         self.hit = False
         self.hit_count = 0
-        self.life = 10
+        self.life = 5
         self.god = False
         self.god_timer = 500
         self.hit_timer = 0
@@ -370,6 +370,20 @@ class Rain(pygame.sprite.Sprite):
             self.rect.x = self.rect.x + self.speedx
             self.rect.y = self.rect.y + self.speedy
 
+def get_poste_size(size):
+    path = join("assets", "House", "poste.png")
+    image = pygame.image.load(path).convert_alpha()
+    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
+    rect = pygame.Rect(0, 0, 720, size)
+    surface.blit(image, (0, 0), rect)
+    return pygame.transform.scale2x(surface)
+class Poste(Object):
+    def __init__(self, x, y, size):
+        super().__init__(x, y, size, size)
+        poste = get_poste_size(size)
+        self.name = "poste"
+        self.image.blit(poste, (0, 0))
+        self.mask = pygame.mask.from_surface(self.image)
 
 def get_background(name):
     image = pygame.image.load(join("assets", "city", name))
@@ -539,6 +553,8 @@ def main(window):
     saw_2.on()
     saw_3 = Saw(4094, HEIGHT - saw_size - 74, 38, 38)
     saw_3.on()
+    
+    poste = Poste(950, HEIGHT - 500, 720)
 
     # esse for de cima vai colocar mais blocos no chão
     floor_1 = [Block(i * block_size, HEIGHT - block_size, block_size)
@@ -555,7 +571,7 @@ def main(window):
                #    distancia X altura
                Block(0, HEIGHT - block_size * 2, block_size),
                Block(block_size * 3, HEIGHT - block_size * 3, block_size), fire,
-               Block(block_size * 3, HEIGHT - block_size * 4, block_size),
+               Block(block_size * 3, HEIGHT - block_size * 4, block_size), poste,
                Block(block_size * 4, HEIGHT - block_size * 4, block_size),
                Block(block_size * 5, HEIGHT - block_size * 4, block_size),
                Block(block_size * 6, HEIGHT - block_size * 4, block_size),
@@ -567,6 +583,7 @@ def main(window):
                Block(block_size * 15, HEIGHT - block_size * 2, block_size),
                Block(block_size * 16, HEIGHT - block_size * 3, block_size),
                Block(block_size * 17, HEIGHT - block_size * 4, block_size),
+               Block(block_size * 20, HEIGHT - block_size * 5, block_size),
 
                Block(block_size * 21, HEIGHT - block_size * 2, block_size), fire_2,
                Block(block_size * 23, HEIGHT - block_size * 2, block_size), fire_3,

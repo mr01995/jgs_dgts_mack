@@ -8,10 +8,12 @@ def draw_pause_menu(window):
     
 
     mouse_posicao = pygame.mouse.get_pos()
-    pygame.draw.rect(window, (200, 200, 200), (450, 100, 400 , 600))
-    OPTIONS_TEXT = get_font(20).render("Jogo Pausado", True, "Black")
-    OPTIONS_RECT = OPTIONS_TEXT.get_rect(center=(640, 260))
-    window.blit(OPTIONS_TEXT, OPTIONS_RECT)
+    pause_rect = pygame.Surface((400,600), pygame.SRCALPHA)  
+    pause_rect.fill((200, 200, 200, 150))
+    window.blit(pause_rect, (450, 100))
+    pause_text = get_font(20).render("Jogo Pausado", True, "Black")
+    text_rect = pause_text.get_rect(center=(640, 260))
+    window.blit(pause_text, text_rect)
 
     opcao_menu = Button(image=None, pos=(640, 550), 
                         text_input="SAIR", font=get_font(75), base_color="Black", hovering_color="Green")
@@ -30,7 +32,5 @@ def draw_pause_menu(window):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if opcao_menu.checkForInput(mouse_posicao):
                     main_menu()
-                if opcao_continuar.checkForInput(mouse_posicao):
-                    pass
 
     pygame.display.update()

@@ -3,6 +3,7 @@ from os import listdir
 from os.path import isfile, join #funções para acessar arquivos
 from level_2 import *
 
+
 class Fire(Object):
     ANIMATION_DELAY = 3
 
